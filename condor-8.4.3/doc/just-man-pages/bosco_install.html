@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>bosco_install</TITLE>
+<META NAME="description" CONTENT="bosco_install">
+<META NAME="keywords" CONTENT="just-man-pages">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="just-man-pages.css">
+
+<LINK REL="next" HREF="bosco_ssh_start.html">
+<LINK REL="previous" HREF="bosco_findplatform.html">
+<LINK REL="up" HREF="just-man-pages.html">
+<LINK REL="next" HREF="bosco_ssh_start.html">
+</HEAD>
+
+<BODY  BGCOLOR=#FFFFFF >
+<!--Navigation Panel-->
+<A NAME="tex2html1202"
+  HREF="bosco_ssh_start.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1200"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1194"
+  HREF="bosco_findplatform.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html1203"
+  HREF="bosco_ssh_start.html">bosco_ssh_start</A>
+<B> Up:</B> <A NAME="tex2html1201"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html1195"
+  HREF="bosco_findplatform.html">bosco_findplatform</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html1204"
+  HREF="bosco_install.html#SECTION00031000000000000000">Synopsis</A>
+<LI><A NAME="tex2html1205"
+  HREF="bosco_install.html#SECTION00032000000000000000">Description</A>
+<LI><A NAME="tex2html1206"
+  HREF="bosco_install.html#SECTION00033000000000000000">Author</A>
+<LI><A NAME="tex2html1207"
+  HREF="bosco_install.html#SECTION00034000000000000000">Copyright</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00030000000000000000"></A><A NAME="man-bosco-install"></A>
+<BR>
+<I>bosco_install</I>
+</H1>  
+  
+<P>
+
+<P>
+<A NAME="2281"></A>
+<A NAME="2282"></A>
+
+<P>
+
+<H2><A NAME="SECTION00031000000000000000">
+Synopsis</A>
+</H2><B><I>bosco_install</I></B>
+[<code>--</code><B>help</B>] | [<code>--</code><B>usage</B>]
+
+<P>
+<B><I>bosco_install</I></B>
+[<code>--</code><B>install[=&lt;path/to/release_dir&gt;]</B>]
+[<code>--</code><B>prefix=&lt;path&gt;</B>]
+[<code>--</code><B>install-dir=&lt;path&gt;</B>]
+[<code>--</code><B>local-dir=&lt;path&gt;</B>]
+[<code>--</code><B>make-personal-condor</B>]
+[<code>--</code><B>bosco</B>]
+[<code>--</code><B>type=&lt;[submit][,execute][,manager]&gt;</B>]
+[<code>--</code><B>central-manager=&lt;host&gt;</B>]
+[<code>--</code><B>credd</B>]
+[<code>--</code><B>owner=&lt;username&gt;</B>]
+[<code>--</code><B>maybe-daemon-owner</B>]
+[<code>--</code><B>install-log=&lt;file&gt;</B>]
+[<code>--</code><B>overwrite</B>]
+[<code>--</code><B>env-scripts-dir=&lt;dir&gt;</B>]
+[<code>--</code><B>no-env-scripts</B>]
+[<code>--</code><B>ignore-missing-libs</B>]
+[<code>--</code><B>force</B>]
+[<code>--</code><B>backup</B>]
+[<code>--</code><B>verbose</B>]
+
+<P>
+
+<H2><A NAME="SECTION00032000000000000000">
+Description</A>
+</H2>
+
+<P>
+<I>bosco_install</I> is part of the Bosco system for accessing high
+throughput computing resources from a local desktop.
+For detailed information, please see the Bosco web site:
+<A NAME="tex2html9"
+  HREF="http://bosco.opensciencegrid.org/">http://bosco.opensciencegrid.org/</A>
+<P>
+<I>bosco_install</I> is linked to <I>condor_install</I>.
+The command
+<PRE>
+  bosco_install
+</PRE>
+becomes
+<PRE>
+  condor_install --bosco
+</PRE>
+Please see the <I>condor_install</I> man page
+for details of the command line options.
+
+<P>
+A Personal HTCondor specialized for Bosco is installed,
+permitting central manager tasks and job submission. 
+
+<P>
+
+<H2><A NAME="SECTION00033000000000000000">
+Author</A>
+</H2> Center for High Throughput Computing, University of Wisconsin-Madison
+  
+<H2><A NAME="SECTION00034000000000000000">
+Copyright</A>
+</H2> 
+  Copyright &#169; 1990-2015 Center for High Throughput Computing, 
+  Computer Sciences Department, 
+  University of Wisconsin-Madison, Madison, WI.  All Rights Reserved.  
+	Licensed under the Apache License, Version 2.0.  
+
+  <BR><HR>
+
+</BODY>
+</HTML>

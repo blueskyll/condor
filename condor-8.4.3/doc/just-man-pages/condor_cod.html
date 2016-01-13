@@ -1,0 +1,448 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>condor_cod</TITLE>
+<META NAME="description" CONTENT="condor_cod">
+<META NAME="keywords" CONTENT="just-man-pages">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="just-man-pages.css">
+
+<LINK REL="next" HREF="condor_compile.html">
+<LINK REL="previous" HREF="condor_chirp.html">
+<LINK REL="up" HREF="just-man-pages.html">
+<LINK REL="next" HREF="condor_compile.html">
+</HEAD>
+
+<BODY  BGCOLOR=#FFFFFF >
+<!--Navigation Panel-->
+<A NAME="tex2html1338"
+  HREF="condor_compile.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1336"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1330"
+  HREF="condor_chirp.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html1339"
+  HREF="condor_compile.html">condor_compile</A>
+<B> Up:</B> <A NAME="tex2html1337"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html1331"
+  HREF="condor_chirp.html">condor_chirp</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html1340"
+  HREF="condor_cod.html#SECTION000121000000000000000">Synopsis</A>
+<LI><A NAME="tex2html1341"
+  HREF="condor_cod.html#SECTION000122000000000000000">Description</A>
+<LI><A NAME="tex2html1342"
+  HREF="condor_cod.html#SECTION000123000000000000000">Options</A>
+<LI><A NAME="tex2html1343"
+  HREF="condor_cod.html#SECTION000124000000000000000">General Remarks</A>
+<LI><A NAME="tex2html1344"
+  HREF="condor_cod.html#SECTION000125000000000000000">Examples</A>
+<LI><A NAME="tex2html1345"
+  HREF="condor_cod.html#SECTION000126000000000000000">Exit Status</A>
+<LI><A NAME="tex2html1346"
+  HREF="condor_cod.html#SECTION000127000000000000000">Author</A>
+<LI><A NAME="tex2html1347"
+  HREF="condor_cod.html#SECTION000128000000000000000">Copyright</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION000120000000000000000"></A><A NAME="man-condor-cod"></A>
+<BR>
+<I>condor_cod</I>
+</H1> manage COD machines and jobs
+  
+<P>
+
+<P>
+<A NAME="4403"></A>
+<A NAME="4404"></A>
+
+<P>
+
+<H2><A NAME="SECTION000121000000000000000">
+Synopsis</A>
+</H2>
+<B><I>condor_cod</I></B>
+
+[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>]
+
+<P>
+<B><I>condor_cod</I></B>
+<I>request</I>
+
+[<B>-pool </B><I>centralmanagerhostname[:portnumber]</I>
+<IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> <B>-name </B><I>scheddname</I> ]<IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-addr  </B><I>"<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$&lt;$">a.b.c.d:port<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$&gt;$">"</I>]
+
+[[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>] <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-debug <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -timeout N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -classad file</B>] ]
+[<B>-requirements expr</B>] [<B>-lease N</B>]
+
+<P>
+<B><I>condor_cod</I></B>
+<I>release</I> <B>-id </B><I>ClaimID</I>
+[[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>] <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-debug <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -timeout N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -classad file</B>] ]
+[<B>-fast</B>]
+
+<P>
+<B><I>condor_cod</I></B>
+<I>activate</I> <B>-id </B><I>ClaimID</I>
+[[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>] <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-debug <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -timeout N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -classad file</B>] ]
+[<B>-keyword string <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -jobad filename <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -cluster N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -proc N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -requirements expr</B>]
+
+<P>
+<B><I>condor_cod</I></B>
+<I>deactivate</I> <B>-id </B><I>ClaimID</I>
+[[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>] <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-debug <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -timeout N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -classad file</B>] ]
+[<B>-fast</B>]
+
+<P>
+<B><I>condor_cod</I></B>
+<I>suspend</I> <B>-id </B><I>ClaimID</I>
+[[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>] <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-debug <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -timeout N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -classad file</B>] ]
+
+<P>
+<B><I>condor_cod</I></B>
+<I>renew</I> <B>-id </B><I>ClaimID</I>
+[[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>] <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-debug <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -timeout N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -classad file</B>] ]
+
+<P>
+<B><I>condor_cod</I></B>
+<I>resume</I> <B>-id </B><I>ClaimID</I>
+[[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>] <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-debug <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -timeout N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -classad file</B>] ]
+
+<P>
+<B><I>condor_cod</I></B>
+<I>delegate_proxy</I> <B>-id </B><I>ClaimID</I>
+[[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>] <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> [<B>-debug <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -timeout N <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -classad file</B>] ]
+[<B>-x509proxy  </B><I>ProxyFile</I>]
+
+<P>
+
+<H2><A NAME="SECTION000122000000000000000">
+Description</A>
+</H2>
+
+<P>
+<I>condor_cod</I> issues commands that manage and use COD claims on
+machines, given proper authorization.
+
+<P>
+Instead of specifying an argument of
+<I>request</I>, <I>release</I>, <I>activate</I>, <I>deactivate</I>, <I>suspend</I>,
+<I>renew</I>, or <I>resume</I>,
+the user may invoke the <I>condor_cod</I> tool by appending an
+underscore followed by one of these arguments.
+As an example, the following two commands are equivalent:
+<PRE>
+    condor_cod release -id "&lt;128.105.121.21:49973&gt;#1073352104#4"
+</PRE>
+<PRE>
+    condor_cod_release -id "&lt;128.105.121.21:49973&gt;#1073352104#4"
+</PRE>
+To make these extended-name commands work,
+hard link  the extended name to the <I>condor_cod</I> executable.
+For example on a Unix machine:
+<PRE>
+ln condor_cod_request condor_cod
+</PRE>
+
+<P>
+The <I>request</I> argument gives a claim ID, and the other 
+commands (<I>release</I>, <I>activate</I>, <I>deactivate</I>, <I>suspend</I>,
+and <I>resume</I>) use the claim ID.
+The claim ID is given as the last line of output for a <I>request</I>,
+and the output appears of the form:
+<PRE>
+ID of new claim is: "&lt;a.b.c.d:portnumber&gt;#x#y"
+</PRE>An actual example of this line of output is 
+<PRE>
+ID of new claim is: "&lt;128.105.121.21:49973&gt;#1073352104#4"
+</PRE>
+<P>
+The HTCondor manual has a complete description of COD.
+
+<P>
+
+<H2><A NAME="SECTION000123000000000000000">
+Options</A>
+</H2>
+  
+<P>
+  <DL>
+<DT><STRONG><B>-help</B></STRONG></DT>
+<DD>Display usage information
+<BR></DD>
+<DT><STRONG><B>-version</B></STRONG></DT>
+<DD>Display version information
+<BR>
+  
+</DD>
+<DT><STRONG><B>-pool </B><I>centralmanagerhostname[:portnumber]</I></STRONG></DT>
+<DD>Specify a pool by giving the
+	central manager's host name and an optional port number
+<BR></DD>
+<DT><STRONG><B>-name </B><I>scheddname</I></STRONG></DT>
+<DD>Send the command to a machine identified by <I>scheddname</I>
+<BR></DD>
+<DT><STRONG><B>-addr </B><I>"<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$&lt;$">a.b.c.d:port<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$&gt;$">"</I></STRONG></DT>
+<DD>Send the command
+	to a machine located at <I>"<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$&lt;$">a.b.c.d:port<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$&gt;$">"</I>
+<BR>
+  
+</DD>
+<DT><STRONG><B>-lease </B><I>N</I></STRONG></DT>
+<DD>For the <B>request</B> of a new claim,
+    automatically release the claim after <I>N</I> seconds.
+<BR>  
+</DD>
+<DT><STRONG><B>request</B></STRONG></DT>
+<DD>Create a new COD claim
+<BR>  
+</DD>
+<DT><STRONG><B>release</B></STRONG></DT>
+<DD>Relinquish a claim and kill any running job
+<BR>  
+</DD>
+<DT><STRONG><B>activate</B></STRONG></DT>
+<DD>Start a job on a given claim
+<BR>  
+</DD>
+<DT><STRONG><B>deactivate</B></STRONG></DT>
+<DD>Kill the current job, but keep the claim
+<BR>  
+</DD>
+<DT><STRONG><B>suspend</B></STRONG></DT>
+<DD>Suspend the job on a given claim
+<BR>  
+</DD>
+<DT><STRONG><B>renew</B></STRONG></DT>
+<DD>Renew the lease to the COD claim
+<BR>  
+</DD>
+<DT><STRONG><B>resume</B></STRONG></DT>
+<DD>Resume the job on a given claim
+<BR>  
+</DD>
+<DT><STRONG><B>delegate_proxy</B></STRONG></DT>
+<DD>Delegate an X509 proxy for the given claim
+<BR>  
+</DD>
+</DL>
+  
+<P>
+
+<P>
+
+<H2><A NAME="SECTION000124000000000000000">
+General Remarks</A>
+</H2>
+
+<P>
+
+<H2><A NAME="SECTION000125000000000000000">
+Examples</A>
+</H2>
+
+<P>
+
+<H2><A NAME="SECTION000126000000000000000">
+Exit Status</A>
+</H2>
+
+<P>
+<I>condor_cod</I> will exit with a status value of 0 (zero) upon success,
+and it will exit with the value 1 (one) upon failure.
+
+<P>
+
+<H2><A NAME="SECTION000127000000000000000">
+Author</A>
+</H2> Center for High Throughput Computing, University of Wisconsin-Madison
+  
+<H2><A NAME="SECTION000128000000000000000">
+Copyright</A>
+</H2> 
+  Copyright &#169; 1990-2015 Center for High Throughput Computing, 
+  Computer Sciences Department, 
+  University of Wisconsin-Madison, Madison, WI.  All Rights Reserved.  
+	Licensed under the Apache License, Version 2.0.  
+
+  <HR>
+<!--Navigation Panel-->
+<A NAME="tex2html1338"
+  HREF="condor_compile.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1336"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1330"
+  HREF="condor_chirp.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html1339"
+  HREF="condor_compile.html">condor_compile</A>
+<B> Up:</B> <A NAME="tex2html1337"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html1331"
+  HREF="condor_chirp.html">condor_chirp</A>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

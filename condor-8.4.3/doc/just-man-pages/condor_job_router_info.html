@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>condor_job_router_info</TITLE>
+<META NAME="description" CONTENT="condor_job_router_info">
+<META NAME="keywords" CONTENT="just-man-pages">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="just-man-pages.css">
+
+<LINK REL="next" HREF="condor_master.html">
+<LINK REL="previous" HREF="condor_install.html">
+<LINK REL="up" HREF="just-man-pages.html">
+<LINK REL="next" HREF="condor_master.html">
+</HEAD>
+
+<BODY  BGCOLOR=#FFFFFF >
+<!--Navigation Panel-->
+<A NAME="tex2html1590"
+  HREF="condor_master.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1588"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1582"
+  HREF="condor_install.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html1591"
+  HREF="condor_master.html">condor_master</A>
+<B> Up:</B> <A NAME="tex2html1589"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html1583"
+  HREF="condor_install.html">condor_install</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html1592"
+  HREF="condor_job_router_info.html#SECTION000271000000000000000">Synopsis</A>
+<LI><A NAME="tex2html1593"
+  HREF="condor_job_router_info.html#SECTION000272000000000000000">Description</A>
+<LI><A NAME="tex2html1594"
+  HREF="condor_job_router_info.html#SECTION000273000000000000000">Options</A>
+<LI><A NAME="tex2html1595"
+  HREF="condor_job_router_info.html#SECTION000274000000000000000">Exit Status</A>
+<LI><A NAME="tex2html1596"
+  HREF="condor_job_router_info.html#SECTION000275000000000000000">Author</A>
+<LI><A NAME="tex2html1597"
+  HREF="condor_job_router_info.html#SECTION000276000000000000000">Copyright</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION000270000000000000000"></A><A NAME="man-condor-job-router-info"></A>
+<BR>
+<I>condor_job_router_info</I>
+</H1> Discover and display information related to job routing
+  
+<P>
+
+<A NAME="11275"></A>
+<A NAME="11276"></A>
+
+<H2><A NAME="SECTION000271000000000000000">
+Synopsis</A>
+</H2>
+<B><I>condor_job_router_info</I></B>
+
+[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>]
+
+<P>
+<B><I>condor_job_router_info</I></B>
+<B>-config</B>
+
+<P>
+<B><I>condor_job_router_info</I></B>
+<B>-match-jobs <B>-jobads </B><I>filename</I> </B>
+[<B>-ignore-prior-routing</B>]
+
+<P>
+
+<H2><A NAME="SECTION000272000000000000000">
+Description</A>
+</H2>
+<I>condor_job_router_info</I> displays information about job routing.
+The information will be either the available, configured routes or
+the routes for specified jobs.
+
+<P>
+
+<H2><A NAME="SECTION000273000000000000000">
+Options</A>
+</H2>
+  
+<P>
+  <DL>
+<DT><STRONG><B>-help</B></STRONG></DT>
+<DD>Display usage information and exit.
+<BR>  
+</DD>
+<DT><STRONG><B>-version</B></STRONG></DT>
+<DD>Display HTCondor version information and exit.
+<BR>  
+</DD>
+<DT><STRONG><B>-config</B></STRONG></DT>
+<DD>Display configured routes.
+<BR>  
+</DD>
+<DT><STRONG><B>-match-jobs</B></STRONG></DT>
+<DD>For each job listed in the file specified
+    by the <B>-jobads</B> option, display the first route found.
+<BR>  
+</DD>
+<DT><STRONG><B>-ignore-prior-routing</B></STRONG></DT>
+<DD>For each job, remove any existing
+    routing ClassAd attributes,  
+    and set attribute <TT>JobStatus</TT> 
+    to the Idle state before finding the first route.
+<BR>  
+</DD>
+<DT><STRONG><B>-jobads </B><I>filename</I></STRONG></DT>
+<DD>Read job ClassAds
+    from file <I>filename</I>. If <I>filename</I> is <TT>-</TT>,
+    then read from <TT>stdin</TT>. 
+<BR>  
+</DD>
+</DL>
+  
+<P>
+
+<P>
+
+<H2><A NAME="SECTION000274000000000000000">
+Exit Status</A>
+</H2>
+
+<P>
+<I>condor_job_router_info</I> will exit with a status value of 0 (zero) upon 
+success,
+and it will exit with the value 1 (one) upon failure.
+
+<P>
+
+<H2><A NAME="SECTION000275000000000000000">
+Author</A>
+</H2> Center for High Throughput Computing, University of Wisconsin-Madison
+  
+<H2><A NAME="SECTION000276000000000000000">
+Copyright</A>
+</H2> 
+  Copyright &#169; 1990-2015 Center for High Throughput Computing, 
+  Computer Sciences Department, 
+  University of Wisconsin-Madison, Madison, WI.  All Rights Reserved.  
+	Licensed under the Apache License, Version 2.0.  
+
+  <HR>
+<!--Navigation Panel-->
+<A NAME="tex2html1590"
+  HREF="condor_master.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1588"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1582"
+  HREF="condor_install.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html1591"
+  HREF="condor_master.html">condor_master</A>
+<B> Up:</B> <A NAME="tex2html1589"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html1583"
+  HREF="condor_install.html">condor_install</A>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>gidd_alloc</TITLE>
+<META NAME="description" CONTENT="gidd_alloc">
+<META NAME="keywords" CONTENT="just-man-pages">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="just-man-pages.css">
+
+<LINK REL="next" HREF="procd_ctl.html">
+<LINK REL="previous" HREF="condor_who.html">
+<LINK REL="up" HREF="just-man-pages.html">
+<LINK REL="next" HREF="procd_ctl.html">
+</HEAD>
+
+<BODY  BGCOLOR=#FFFFFF >
+<!--Navigation Panel-->
+<A NAME="tex2html2334"
+  HREF="procd_ctl.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html2332"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html2326"
+  HREF="condor_who.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html2335"
+  HREF="procd_ctl.html">procd_ctl</A>
+<B> Up:</B> <A NAME="tex2html2333"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html2327"
+  HREF="condor_who.html">condor_who</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html2336"
+  HREF="gidd_alloc.html#SECTION000711000000000000000">Synopsis</A>
+<LI><A NAME="tex2html2337"
+  HREF="gidd_alloc.html#SECTION000712000000000000000">Description</A>
+<LI><A NAME="tex2html2338"
+  HREF="gidd_alloc.html#SECTION000713000000000000000">General Remarks</A>
+<LI><A NAME="tex2html2339"
+  HREF="gidd_alloc.html#SECTION000714000000000000000">Exit Status</A>
+<LI><A NAME="tex2html2340"
+  HREF="gidd_alloc.html#SECTION000715000000000000000">Author</A>
+<LI><A NAME="tex2html2341"
+  HREF="gidd_alloc.html#SECTION000716000000000000000">Copyright</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION000710000000000000000"></A><A NAME="man-gidd-alloc"></A>
+<BR>
+gidd_alloc
+</H1> find a GID within the specified range which is not used by any process
+  
+<P>
+
+<A NAME="31426"></A>
+<A NAME="31427"></A>
+
+<P>
+
+<H2><A NAME="SECTION000711000000000000000">
+Synopsis</A>
+</H2><B>gidd_alloc</B>
+<I>min-gid</I>
+<I>max-gid</I>
+
+<P>
+
+<H2><A NAME="SECTION000712000000000000000">
+Description</A>
+</H2>
+
+<P>
+This program will scan the alive PIDs, looking for which GID is unused in
+the supplied, inclusive range specified by the required arguments
+<I>min-gid</I> and <I>max-gid</I>. 
+Upon finding one,
+it will add the GID to its own supplementary group list,
+and then scan the PIDs again expecting to find only itself using the GID. 
+If no collision has occurred, the program exits, otherwise it retries.
+
+<P>
+
+<H2><A NAME="SECTION000713000000000000000">
+General Remarks</A>
+</H2>
+
+<P>
+This is a program only available for the Linux ports of HTCondor.
+
+<P>
+
+<H2><A NAME="SECTION000714000000000000000">
+Exit Status</A>
+</H2>
+
+<P>
+<I>gidd_alloc</I> will exit with a status value of 0 (zero) upon success,
+and it will exit with the value 1 (one) upon failure.
+
+<P>
+
+<H2><A NAME="SECTION000715000000000000000">
+Author</A>
+</H2> Center for High Throughput Computing, University of Wisconsin-Madison
+  
+<H2><A NAME="SECTION000716000000000000000">
+Copyright</A>
+</H2> 
+  Copyright &#169; 1990-2015 Center for High Throughput Computing, 
+  Computer Sciences Department, 
+  University of Wisconsin-Madison, Madison, WI.  All Rights Reserved.  
+	Licensed under the Apache License, Version 2.0.  
+
+  <HR>
+<!--Navigation Panel-->
+<A NAME="tex2html2334"
+  HREF="procd_ctl.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html2332"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html2326"
+  HREF="condor_who.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html2335"
+  HREF="procd_ctl.html">procd_ctl</A>
+<B> Up:</B> <A NAME="tex2html2333"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html2327"
+  HREF="condor_who.html">condor_who</A>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

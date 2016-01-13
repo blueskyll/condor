@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>condor_check_userlogs</TITLE>
+<META NAME="description" CONTENT="condor_check_userlogs">
+<META NAME="keywords" CONTENT="just-man-pages">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="just-man-pages.css">
+
+<LINK REL="next" HREF="condor_checkpoint.html">
+<LINK REL="previous" HREF="condor_advertise.html">
+<LINK REL="up" HREF="just-man-pages.html">
+<LINK REL="next" HREF="condor_checkpoint.html">
+</HEAD>
+
+<BODY  BGCOLOR=#FFFFFF >
+<!--Navigation Panel-->
+<A NAME="tex2html1289"
+  HREF="condor_checkpoint.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1287"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1281"
+  HREF="condor_advertise.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html1290"
+  HREF="condor_checkpoint.html">condor_checkpoint</A>
+<B> Up:</B> <A NAME="tex2html1288"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html1282"
+  HREF="condor_advertise.html">condor_advertise</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html1291"
+  HREF="condor_check_userlogs.html#SECTION00091000000000000000">Synopsis</A>
+<LI><A NAME="tex2html1292"
+  HREF="condor_check_userlogs.html#SECTION00092000000000000000">Description</A>
+<LI><A NAME="tex2html1293"
+  HREF="condor_check_userlogs.html#SECTION00093000000000000000">Exit Status</A>
+<LI><A NAME="tex2html1294"
+  HREF="condor_check_userlogs.html#SECTION00094000000000000000">Author</A>
+<LI><A NAME="tex2html1295"
+  HREF="condor_check_userlogs.html#SECTION00095000000000000000">Copyright</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00090000000000000000"></A><A NAME="man-condor-check-userlogs"></A>
+<BR>
+<I>condor_check_userlogs</I>
+</H1> Check job event log files for errors
+  
+<P>
+
+<P>
+<A NAME="3184"></A>
+<A NAME="3185"></A>
+
+<P>
+
+<H2><A NAME="SECTION00091000000000000000">
+Synopsis</A>
+</H2><B><I>condor_check_userlogs</I></B>
+<I>UserLogFile1</I>
+[<I>UserLogFile2 ... UserLogFileN </I>]
+
+<P>
+
+<H2><A NAME="SECTION00092000000000000000">
+Description</A>
+</H2>
+
+<P>
+<I>condor_check_userlogs</I> is a program for checking a job event log or
+a set of job event logs for errors.  
+Output includes an indication that no errors were found
+within a log file,
+or a list of errors such as an
+execute or terminate event without a corresponding submit event,
+or multiple terminated events for the same job.
+
+<P>
+<I>condor_check_userlogs</I> is especially useful for debugging
+<I>condor_dagman</I> problems.  If <I>condor_dagman</I> reports an error
+it is often useful to run <I>condor_check_userlogs</I> on the relevant
+log files.
+
+<P>
+
+<H2><A NAME="SECTION00093000000000000000">
+Exit Status</A>
+</H2>
+
+<P>
+<I>condor_check_userlogs</I> will exit with a status value of 0 (zero)
+upon success, and it will exit with the value 1 (one) upon failure.
+
+<P>
+
+<H2><A NAME="SECTION00094000000000000000">
+Author</A>
+</H2> Center for High Throughput Computing, University of Wisconsin-Madison
+  
+<H2><A NAME="SECTION00095000000000000000">
+Copyright</A>
+</H2> 
+  Copyright &#169; 1990-2015 Center for High Throughput Computing, 
+  Computer Sciences Department, 
+  University of Wisconsin-Madison, Madison, WI.  All Rights Reserved.  
+	Licensed under the Apache License, Version 2.0.  
+
+  <BR><HR>
+
+</BODY>
+</HTML>

@@ -1,0 +1,175 @@
+\index{ClassAd!Collector attributes}
+\begin{description}
+
+\index{ClassAd Collector attribute!CollectorIpAddr}
+\item[\AdAttr{CollectorIpAddr}:] String with the IP and port address of the
+  \Condor{collector} daemon which is publishing this ClassAd.
+
+\index{ClassAd Collector attribute!CondorVersion}
+\item[\AdAttr{CondorVersion}:] A string containing the HTCondor version
+number, the release date, and the build identification number.
+
+\index{ClassAd Collector attribute!CurrentJobsRunningAll}
+\item[\AdAttr{CurrentJobsRunningAll}:] An integer value representing the sum of
+  all jobs running under all universes.
+
+\index{ClassAd Collector attribute!CurrentJobsRunning<universe>}
+\item[\AdAttr{CurrentJobsRunning<universe>}:] An integer value representing
+  the current number of jobs running under the universe which forms 
+  the attribute name.  For example
+\begin{verbatim}
+  CurrentJobsRunningVanilla = 567
+\end{verbatim}
+  identifies that the \Condor{collector} counts 567 vanilla universe jobs
+  currently running.
+  \Attr{<universe>} is one of 
+  \Expr{Unknown}, \Expr{Standard}, \Expr{Vanilla}, \Expr{Scheduler},
+  \Expr{Java}, \Expr{Parallel}, \Expr{VM}, or \Expr{Local}.
+  There are other universes, but they are not listed here, as they represent
+  ones that are no longer used in Condor.
+
+\index{ClassAd Collector attribute!DaemonStartTime}
+\item[\AdAttr{DaemonStartTime}:] The time that this daemon was
+  started, represented as the number of second elapsed since
+  the Unix epoch (00:00:00 UTC, Jan 1, 1970).
+
+\index{ClassAd Collector attribute!HostsClaimed}
+\item[\AdAttr{HostsClaimed}:] Description is not yet written.
+
+\index{ClassAd Collector attribute!HostsOwner}
+\item[\AdAttr{HostsOwner}:] Description is not yet written.
+
+\index{ClassAd Collector attribute!HostsTotal}
+\item[\AdAttr{HostsTotal}:] Description is not yet written.
+
+\index{ClassAd Collector attribute!HostsUnclaimed}
+\item[\AdAttr{HostsUnclaimed}:] Description is not yet written.
+
+\index{ClassAd Collector attribute!IdleJobs}
+\item[\AdAttr{IdleJobs}:] Description is not yet written.
+
+\index{ClassAd Collector attribute!Machine}
+\item[\AdAttr{Machine}:] A string with the machine's fully qualified 
+  host name.
+
+\index{ClassAd Collector attribute!MaxJobsRunningAll}
+\item[\AdAttr{MaxJobsRunning<universe}:] An integer value representing 
+  the sum of all \Attr{MaxJobsRunning<universe>} values.
+
+\index{ClassAd Collector attribute!MaxJobsRunning<universe>}
+\item[\AdAttr{MaxJobsRunning<universe>}:] An integer value representing 
+  largest number of currently running jobs ever seen
+  under the universe which forms the attribute name, 
+  over the life of this \Condor{collector} process.
+  For example
+\begin{verbatim}
+  MaxJobsRunningVanilla = 401
+\end{verbatim}
+  identifies that the \Condor{collector} saw 401 vanilla universe jobs
+  currently running at one point in time, and that was the largest
+  number it had encountered.
+  \Attr{<universe>} is one of 
+  \Expr{Unknown}, \Expr{Standard}, \Expr{Vanilla}, \Expr{Scheduler},
+  \Expr{Java}, \Expr{Parallel}, \Expr{VM}, or \Expr{Local}.
+  There are other universes, but they are not listed here, as they represent
+  ones that are no longer used in Condor.
+
+\index{ClassAd Collector attribute!MyAddress}
+\item[\AdAttr{MyAddress}:] String with the IP and port address of the
+\Condor{collector} daemon which is publishing this ClassAd.
+
+\index{ClassAd Collector attribute!MyCurrentTime}
+\item[\AdAttr{MyCurrentTime}:]  The time, represented as the number of 
+  second elapsed since the Unix epoch (00:00:00 UTC, Jan 1, 1970),
+  at which the \Condor{schedd} daemon last sent a ClassAd update to the
+  \Condor{collector}.
+
+\index{ClassAd Collector attribute!Name}
+\item[\AdAttr{Name}:] The name of this resource; typically the same value as
+  the \AdAttr{Machine} attribute, but could be customized by the site
+  administrator.
+  On SMP machines, the \Condor{startd} will divide the CPUs up into separate
+  slots, each with with a unique name.
+  These names will be of the form ``slot\#@full.hostname'', for example,
+  ``slot1@vulture.cs.wisc.edu'', which signifies slot number 1 from
+  vulture.cs.wisc.edu.
+
+\index{ClassAd Collector attribute!RunningJobs}
+\item[\AdAttr{RunningJobs}:] Definition not yet written.
+
+\index{ClassAd Collector attribute!StartdAds}
+\item[\AdAttr{StartdAds}:] The integer number of unique \Condor{startd}
+  daemon ClassAds counted at the most recent time the \Condor{collector}
+  updated its own ClassAd.
+
+\index{ClassAd Collector attribute!StartdAdsPeak}
+\item[\AdAttr{StartdAdsPeak}:] The largest integer number of unique 
+  \Condor{startd} daemon ClassAds seen at any one time, 
+  since the \Condor{collector} began executing.
+
+\index{ClassAd Collector attribute!SubmitterAds}
+\item[\AdAttr{SubmitterAds}:] The integer number of unique submitters 
+  counted at the most recent time the \Condor{collector} 
+  updated its own ClassAd.
+
+\index{ClassAd Collector attribute!SubmitterAdsPeak}
+\item[\AdAttr{SubmitterAdsPeak}:] The largest integer number of unique 
+  submitters seen at any one time, 
+since the \Condor{collector} began executing.
+
+\index{ClassAd Collector attribute!UpdateInterval}
+\item[\AdAttr{UpdateInterval}:] Description is not yet written.
+
+\index{ClassAd Collector attribute!UpdateSequenceNumber}
+\item[\AdAttr{UpdateSequenceNumber}:] An integer that begins at 0,
+   and increments by one each time the same ClassAd is again advertised.
+
+\index{ClassAd Collector attribute!UpdatesInitial}
+\index{ClassAd Collector attribute!UpdatesInitial\_<ClassAd-Name>}
+\item[\AdAttr{UpdatesInitial}:] A Statistics attribute representing
+  a count of unique ClassAds seen,
+  over the lifetime of this \Condor{collector}.
+  Counts per ClassAd are advertised in attributes named by ClassAd type
+  as \Attr{UpdatesInitial\_<ClassAd-Name>}.
+  \Attr{<ClassAd-Name>} is each of \Attr{CkptSrvr}, \Attr{Collector},
+  \Attr{Defrag}, \Attr{Master}, \Attr{Schedd}, \Attr{Start},
+  \Attr{StartdPvt}, and \Attr{Submittor}.
+
+\index{ClassAd Collector attribute!UpdatesLost}
+\index{ClassAd Collector attribute!UpdatesLost\_<ClassAd-Name>}
+\item[\AdAttr{UpdatesLost}:] A Statistics attribute representing
+  the count of updates lost,
+  over the lifetime of this \Condor{collector}.
+  Counts per ClassAd are advertised in attributes named by ClassAd type
+  as \Attr{UpdatesLost\_<ClassAd-Name>}.
+  \Attr{<ClassAd-Name>} is each of \Attr{CkptSrvr}, \Attr{Collector},
+  \Attr{Defrag}, \Attr{Master}, \Attr{Schedd}, \Attr{Start},
+  \Attr{StartdPvt}, and \Attr{Submittor}.
+
+\index{ClassAd Collector attribute!UpdatesLostMax}
+\item[\AdAttr{UpdatesLostMax}:] A Statistics attribute defining
+  the largest number of updates lost at any point in time, 
+  over the lifetime of this \Condor{collector}.
+  ClassAd sequence numbers are used to detect lost ClassAds.
+
+\index{ClassAd Collector attribute!UpdatesLostRatio}
+\item[\AdAttr{UpdatesLostRatio}:] A Statistics attribute defining
+  the floating point ratio of the total number of updates to
+  the number of updates lost 
+  over the lifetime of this \Condor{collector}.
+  ClassAd sequence numbers are used to detect lost ClassAds.
+  A value of 1 indicates that all ClassAds have been lost.
+
+\index{ClassAd Collector attribute!UpdatesTotal}
+\index{ClassAd Collector attribute!UpdatesTotal\_<ClassAd-Name>}
+\item[\AdAttr{UpdatesTotal}:] A Statistics attribute representing the
+  count of the number of ClassAd updates received
+  over the lifetime of this \Condor{collector}.
+  Counts per ClassAd are advertised in attributes named by ClassAd type
+  as \Attr{UpdatesTotal\_<ClassAd-Name>}.
+  \Attr{<ClassAd-Name>} is each of \Attr{CkptSrvr}, \Attr{Collector},
+  \Attr{Defrag}, \Attr{Master}, \Attr{Schedd}, \Attr{Start},
+  \Attr{StartdPvt}, and \Attr{Submittor}.
+
+\end{description}
+

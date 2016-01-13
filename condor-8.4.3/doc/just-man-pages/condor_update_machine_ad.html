@@ -1,0 +1,260 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>condor_update_machine_ad</TITLE>
+<META NAME="description" CONTENT="condor_update_machine_ad">
+<META NAME="keywords" CONTENT="just-man-pages">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="just-man-pages.css">
+
+<LINK REL="next" HREF="condor_updates_stats.html">
+<LINK REL="previous" HREF="condor_transfer_data.html">
+<LINK REL="up" HREF="just-man-pages.html">
+<LINK REL="next" HREF="condor_updates_stats.html">
+</HEAD>
+
+<BODY  BGCOLOR=#FFFFFF >
+<!--Navigation Panel-->
+<A NAME="tex2html2163"
+  HREF="condor_updates_stats.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html2161"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html2155"
+  HREF="condor_transfer_data.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html2164"
+  HREF="condor_updates_stats.html">condor_updates_stats</A>
+<B> Up:</B> <A NAME="tex2html2162"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html2156"
+  HREF="condor_transfer_data.html">condor_transfer_data</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html2165"
+  HREF="condor_update_machine_ad.html#SECTION000611000000000000000">Synopsis</A>
+<LI><A NAME="tex2html2166"
+  HREF="condor_update_machine_ad.html#SECTION000612000000000000000">Description</A>
+<LI><A NAME="tex2html2167"
+  HREF="condor_update_machine_ad.html#SECTION000613000000000000000">Options</A>
+<LI><A NAME="tex2html2168"
+  HREF="condor_update_machine_ad.html#SECTION000614000000000000000">General Remarks</A>
+<LI><A NAME="tex2html2169"
+  HREF="condor_update_machine_ad.html#SECTION000615000000000000000">Examples</A>
+<LI><A NAME="tex2html2170"
+  HREF="condor_update_machine_ad.html#SECTION000616000000000000000">Exit Status</A>
+<LI><A NAME="tex2html2171"
+  HREF="condor_update_machine_ad.html#SECTION000617000000000000000">Author</A>
+<LI><A NAME="tex2html2172"
+  HREF="condor_update_machine_ad.html#SECTION000618000000000000000">Copyright</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION000610000000000000000">
+<I>condor_update_machine_ad</I></A>
+</H1> update a machine ClassAd
+  
+<P>
+
+<A NAME="man-condor-update-machine-ad"></A><A NAME="28249"></A>
+<A NAME="28250"></A>
+
+<P>
+
+<H2><A NAME="SECTION000611000000000000000">
+Synopsis</A>
+</H2><B><I>condor_update_machine_ad</I></B>
+
+[<B>-help <IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$\vert$"> -version</B>]
+
+<P>
+<B><I>condor_update_machine_ad</I></B>
+[<B>-pool  </B><I>centralmanagerhostname[:portnumber]</I>]
+[<B>-name  </B><I>startdname</I>]
+<I>path/to/update-ad</I>
+
+<P>
+
+<H2><A NAME="SECTION000612000000000000000">
+Description</A>
+</H2>
+<I>condor_update_machine_ad</I> modifies the specified <I>condor_startd</I>
+daemon's machine ClassAd.
+The ClassAd in the file given by <TT>path/to/update-ad</TT>
+represents the changed attributes.
+The changes persists until the <I>condor_startd</I> restarts.
+If no file is specified on the command line, <I>condor_update_machine_ad</I>
+reads the update ClassAd from <TT>stdin</TT>.
+
+<P>
+Contents of the file or <TT>stdin</TT> must contain a complete
+ClassAd.
+Each line <I>must</I> be terminated by a newline character,
+including the last line of the file.
+Lines are of the form
+
+<P>
+<PRE>
+&lt;attribute&gt; = &lt;value&gt;
+</PRE>
+
+<P>
+Changes to certain ClassAd attributes will cause the 
+<I>condor_startd</I> to regenerate values for other ClassAd attributes.
+An example of this is setting <TT>HasVM</TT>.
+This will cause <TT>OfflineUniverses</TT>,
+<TT>VMOfflineTime</TT>, and <TT>VMOfflineReason</TT> to change.
+
+<P>
+
+<H2><A NAME="SECTION000613000000000000000">
+Options</A>
+</H2>
+  
+<P>
+  <DL>
+<DT><STRONG><B>-help</B></STRONG></DT>
+<DD>Display usage information and exit
+<BR>  
+</DD>
+<DT><STRONG><B>-version</B></STRONG></DT>
+<DD>Display the HTCondor version and exit
+<BR>  
+</DD>
+<DT><STRONG><B>-pool </B><I>centralmanagerhostname[:portnumber]</I></STRONG></DT>
+<DD>Specify a pool by giving the
+     central manager's host name and an optional port number
+<BR>  
+</DD>
+<DT><STRONG><B>-name </B><I>startdname</I></STRONG></DT>
+<DD>Send the command to a machine 
+     identified by <I>startdname</I>
+<BR>  
+</DD>
+</DL>
+  
+<P>
+
+<P>
+
+<H2><A NAME="SECTION000614000000000000000">
+General Remarks</A>
+</H2>
+
+<P>
+This tool is intended for the use of system administrators when dealing
+with offline universes.  
+
+<P>
+
+<H2><A NAME="SECTION000615000000000000000">
+Examples</A>
+</H2>
+
+<P>
+To re-enable matching with the VM universe jobs,
+place on <TT>stdin</TT> a complete
+ClassAd (including the ending newline character) to
+change the value of ClassAd attribute <TT>HasVM</TT>:
+
+<P>
+<PRE>
+echo "HasVM = True
+" | condor_update_machine_ad
+</PRE>
+
+<P>
+To prevent vm universe jobs from matching with the machine:
+
+<P>
+<PRE>
+echo "HasVM = False
+" | condor_update_machine_ad
+</PRE>
+
+<P>
+To prevent vm universe jobs from matching with the machine
+and specify a reason:
+
+<P>
+<PRE>
+echo "HasVM = False
+VMOfflineReason = \"Cosmic rays.\"
+" | condor_update_machine_ad
+</PRE>
+
+<P>
+Note that the quotes around the reason are required by ClassAds, 
+and they must be escaped because of the shell.
+Using a file instead of <TT>stdin</TT> may be preferable
+in these situations, 
+because neither quoting nor escape characters are needed.
+
+<P>
+
+<H2><A NAME="SECTION000616000000000000000">
+Exit Status</A>
+</H2>
+
+<P>
+<I>condor_update_machine_ad</I> will exit with a status value of 0 (zero) upon
+success, and it will exit with the value 1 (one) upon failure.
+
+<P>
+
+<H2><A NAME="SECTION000617000000000000000">
+Author</A>
+</H2> Center for High Throughput Computing, University of Wisconsin-Madison
+  
+<H2><A NAME="SECTION000618000000000000000">
+Copyright</A>
+</H2> 
+  Copyright &#169; 1990-2015 Center for High Throughput Computing, 
+  Computer Sciences Department, 
+  University of Wisconsin-Madison, Madison, WI.  All Rights Reserved.  
+	Licensed under the Apache License, Version 2.0.  
+
+  <HR>
+<!--Navigation Panel-->
+<A NAME="tex2html2163"
+  HREF="condor_updates_stats.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html2161"
+  HREF="just-man-pages.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html2155"
+  HREF="condor_transfer_data.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html2164"
+  HREF="condor_updates_stats.html">condor_updates_stats</A>
+<B> Up:</B> <A NAME="tex2html2162"
+  HREF="just-man-pages.html">just-man-pages</A>
+<B> Previous:</B> <A NAME="tex2html2156"
+  HREF="condor_transfer_data.html">condor_transfer_data</A>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>
