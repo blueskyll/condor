@@ -140,6 +140,15 @@ struct PreemptCandidateNode {
 	ClassAd *machine_ad;
 };
 
+
+//we build an array of there, in order to sort them, fist on available time, then on rank, last on cluster id
+struct BusyCandidateNode{
+	time_t avail_time;
+	float rank;
+	int cluster_id;
+	ClassAd *machine_ad;
+};
+
 // save for reservations
 #if 0
 
@@ -290,6 +299,13 @@ class DedicatedScheduler : public Service {
  		//for it to start
  	bool backfillJobs(int cur_cluster);
 
+		
+		//add the resources in the candidates which satisfies the jobs list to the reserved_resources
+		//add the deleted ones to their original list
+	void addReservedResources( CandidateList *candidates, ResList *resources, HashTable<HashKey, ClassAd*> reserved_resources );
+
+	time_t getJobEarliestExecTime(CAList *jobs, int nprocs); 
+	
 		// This gets a list of all dedicated resources we control.
 		// This is called at the begining of each handleDedicatedJobs
 		// cycle.
@@ -497,6 +513,10 @@ int clusterSortByPrioAndDate( const void* ptr1, const void* ptr2 );
 // Comparison function for sorting machines by rank, cluster_id
 int
 RankSorter( const void *ptr1, const void* ptr2 );
+
+//added here to provide sort function according to available time
+int
+AvailTimeSorter(const void *ptr1, const void *ptr2);
 
 // Print out
 void displayResource( ClassAd* ad, const char* str, int debug_level );

@@ -1639,54 +1639,349 @@ void duplicate_partitionable_res(ResList*& resources) {
 //--------------------------------------------------
 //backfill process
 //--------------------------------------------------
-void
+bool
 DedicatedScheduler::backfillJobs( int cur_cluster ){
 		//there is no job left.
 	if( cur_cluster > idle_clusters->getlast() ){
 		return true;
 	}
-		//before backfill, we need to make reservation for the current cluster
+		//initialization, all defined to make reservation for the current cluster
+	int cluster = - 1;
 	ClassAd *job = NULL;
 	CAList *jobs = NULL;
-	ResList* reservedResource = new ResList;
+	HashTable <HashKey, ClassAd*> reserved_resources = new HashTable <HashKey, ClassAd*>( 199, hashFunction ); 
 	int nprocs = 0;
 	bool give_up = false;
-	
-	while( job = GetJobAd( (*idle_clusters)[i], nprocs) ){
+	time_t cur_time = time(0);
+	CandidateList *idle_candidates = NULL;
+	CAList *idle_candidates_jobs = NULL;
+
+	CandidateList *limbo_candidates = NULL;
+	CAList *limbo_candidates_jobs = NULL;
+
+	CandidateList *unclaimed_candidates = NULL;
+	CAList *unclaimed_candidates_jobs = NULL;
+
+	jobs = new CAList;
+	int l, i;
+
+		//get all the jobs in the cluster and check if it is a job need to reconnect
+	while( job = GetJobAd( (*idle_clusters)[cur_cluster], nprocs) ){
 		int hosts = 0;
 		if( ! job->LookupInteger(ATTR_CLUSTER_ID, cluster) ) {
 				// ATTR_CLUSTER_ID is undefined!
-			break;
+			return true;
 		}
 		if( !job->LookupInteger(ATTR_MAX_HOSTS, hosts) ) {
-			break;
+			return true;
 		}
 		
 		int proc_id;
 		if( !job->LookupInteger(ATTR_PROC_ID, proc_id) ) {
-			give_up = true;
-			break;
+			return true;
 		}
 		jobsToReconnect.Rewind();
 		PROC_ID reconId;
 		while (jobsToReconnect.Next(reconId)) {
 			if ((reconId.cluster == cluster) &&
 				(reconId.proc	 == proc_id)) {
-				dprintf(D_FULLDEBUG, "skipping %d.%d because it is waitingn to reconnect\n", cluster, proc_id);
-				break;
-				}
+				dprintf(D_FULLDEBUG, "skipping %d.%d because it is waiting to reconnect\n", cluster, proc_id);
+				return true;
 			}
-			dprintf( D_FULLDEBUG, 
-					"Trying to find %d resource(s) for dedicated job %d.%d\n",
-						hosts, cluster, proc_id );
+		}
+		dprintf( D_FULLDEBUG, 
+				"Trying to find %d resource(s) for dedicated job %d.%d\n",
+					hosts, cluster, proc_id );
 		
-			for( int job_num = 0 ; job_num < hosts; job_num++) {
-				jobs->Append(job);
+		for( int job_num = 0 ; job_num < hosts; job_num++) {
+			jobs->Append(job);
+		}
+		nprocs++;
+	}
+		
+	bool want_groups = false;;
+	job = jobs->Head();
+	jobs->Rewind();
+	job->LookupBool(ATTR_WANT_PARALLEL_SCHEDULING_GROUPS, want_groups);
+
+	if (want_groups) {
+		bool foundMatch = false;
+		bool psgIsPreferred = false; 
+		psgIsPreferred = job->LookupBool(ATTR_PREFER_PARALLEL_SCHEDULING_GROUP, psgIsPreferred);
+
+		foundMatch = satisfyJobWithGroups(jobs, cluster, nprocs);
+			
+				// If we found a matching set of machines, or PSG is a hard requirement, we're
+				// done now.  Otherwise, keep looking.
+			if (foundMatch || !psgIsPreferred) {
+ 				// we're done with these, safe to delete
+				return true; 
 			}
-			nprocs++;
+		}
+
+		//get the candidate resources we need from idle_resources 
+		//delete the satisfied job from jobs
+		//add the candidate resource to the hashtable 
+		//at last, we need to append idle_resources's deleted ones into it
+	if(idle_resources){
+		
+			// These are the potential resources for the job
+		idle_candidates = new CandidateList;
+		idle_candidates_jobs = new CAList;
+
+		//just in case that the resource can satisfy the job
+		if(idle_resources->satisfyJobs(jobs, idle_candidates, idle_candidates_jobs, true)){
+			if(idle_candidates){
+				idle_candidates->markScheduled();
+				delete idle_candidates;
+				idle_candidates = NULL;
+
+				delete idle_candidates_jobs;
+				idle_candidates_jobs = NULL;
+			}
+			
+			delete jobs;
+			return true;
+		}
 	}
 
+	if(limbo_resources){
+		
+		limbo_candidates = new CandidateList;
+		limbo_candidates_jobs = new CAList;
+		if(limbo_resources->satisfyJobs(jobs, limbo_candidates, limbo_candidates_jobs, false)){
+			if(idle_candidates){
+				idle_candidates->markScheduled();
+				delete idle_candidates;
+				idle_candidates = NULL;
+
+				delete idle_candidates_jobs;
+				idle_candidates_jobs = NULL;
+			}
+			limbo_candidates->markScheduled();
+
+			delete limbo_candidates;
+			limbo_candidates = NULL;
+
+			delete limbo_candidates_jobs;
+			limbo_candidates_jobs = NULL;
+			
+			delete jobs;
+		}
+		return true;
+	}
+
+	if(unclaimed_resources){
+		unclaimed_candidates = new CandidateList;
+		unclaimed_candidates_jobs = new CAList;
+		bool result = unclaimed_resources->satisfyJobs(jobs, unclaimed_candidates, unclaimed_candidates_jobs, true);
+
+		if(unclaimed_candidates){
+			unclaimed_candidates->Rewind();
+			unclaimed_candidates_jobs->Rewind();
+			ClassAd *ad;
+			while((ad = unclaimed_candidates->Next())){
+				ClassAd *ajob = unclaimed_candidates_jobs->Next();
+				generateRequest( ajob );
+			}
+		}
+
+		if(result){
+			if( idle_candidates ) {
+				idle_candidates->markScheduled();
+				delete idle_candidates;
+				idle_candidates = NULL;
+				delete idle_candidates_jobs;
+				idle_candidates_jobs = NULL;
+			}
+			
+			if( limbo_candidates ) {
+				limbo_candidates->markScheduled();
+				delete limbo_candidates;
+				limbo_candidates = NULL;
+				delete limbo_candidates_jobs;
+				limbo_candidates_jobs = NULL;
+			}
+				
+			delete unclaimed_candidates;
+			unclaimed_candidates = NULL;
+			delete unclaimed_candidates_jobs;
+			unclaimed_candidates_jobs = NULL;
+
+			
+			delete jobs;
+			return true;
+		}
+	}
+
+	if(idle_candidates){
+		idle_candidates.markScheduled();
+		addReservedResources(idle_candidates, idle_resources, reserved_resources);
+
+		delete idle_candidates;
+		idle_candidates = NULL;
+
+		delete idle_candidates_jobs;
+		idle_candidates_jobs = NULL;
+	}
+
+	if(limbo_candidates){
+		limbo_candidates->markScheduled();
+		addReservedResources(limbo_candidates, limbo_resources, reserved_resources);
+
+		delete limbo_candidates;
+		limbo_candidates = NULL;
+
+		delete limbo_candidates_jobs;
+		limbo_candidates_jobs = NULL;
+	}
+
+	if(unclaimed_candidates){
+		addReservedResources(unclaimed_candidates, unclaimed_resources, reserved_resources);
+
+		delete unclaimed_candidates;
+		unclaimed_candidates = NULL;
+
+		delete unclaimed_candidates_jobs;
+		unclaimed_candidates_jobs = NULL;
+	}
+
+	time_t earlist_exec_time = getJobEarliestExecTime(jobs,nprocs);
+	if(cur_time >= earlist_exec_time)
+		return true;
+
+	l = idle_clusters->getlast();
+	for(i = 0; i <= l; i++){
+		if(jobs){
+			delete jobs;
+		}
+	}
+	
+
 }
+
+
+//get the expected time which the job can be assigned enough resources to run. 
+//If the return value is cur_now, then it indicates that the job is not suitable to reserve resources.
+time_t
+DedicatedScheduler::getJobEarliestExecTime( CAList * jobs, int nprocs){
+	time_t cur_time = time(0);
+	time_t earlist_exec_time = 0;
+	
+	if( nprocs <= 0 || jobs->Number() <= 0)
+		return now;
+
+	ClassAd *job = NULL;
+	int proc;
+	int nodes;
+	int cluster;
+	
+	int *nodes_per_proc = new int[nprocs];
+	for(int ni = 0; ni < nprocs; ni++){
+		nodes_per_proc[ni] = 0;
+	}
+
+	jobs->Rewind();
+	job = jobs->Next();
+	job->LookupInteger(ATTR_CLUSTER_ID, cluster);
+	
+	jobs->Rewind();	
+	while( (job = jobs->Next()) ){
+		job->LookupInteger(ATTR_PROC_ID, proc);
+		nodes_per_proc[proc]++;
+	}
+
+	struct BusyCandidateNode* busy_candidate_array = NULL;
+	jobs->Rewind();
+	while( (job = jobs->Next()) ){
+		job->LookupInteger(ATTR_PROC_ID, proc);
+		nodes = nodes_per_proc[proc];
+
+		int len = busy_resources->Length();
+		busy_candidate_array = new struct BusyCandidateNode[len];
+		int num_candidates = 0;
+
+		busy_resources->Rewind();
+		while( ClassAd *machine = busy_resources->Next() ){
+			match_rec *mrec;
+			std::string buf;
+
+			if( !(mrec = getMrec(machine, buf)) ){
+				EXCEPT( "no match for %s in all_matches table, yet " 
+ 						"allocated to dedicated job %d.0!",
+ 						buf.c_str(), cluster );
+			}
+			time_t avail_time = mrec->next_avail_time;
+			
+			float rank = 0.0;
+			job->EvalFloat(ATTR_RANK, machine, rank);
+
+			busy_candidate_array[num_candidates].avail_time = avail_time;
+			busy_candidate_array[num_candidates].rank = rank;
+			busy_candidate_array[num_candidates].cluster_id = cluster;
+			busy_candidate_array[num_candidates].machine_ad = machine;
+			num_candidates++;
+		}
+
+		qsort(busy_candidate_array, num_candidates, sizeof(struct BusyCandidateNode), AvailTimeSorter);
+
+		for(int cand = 0; cand < num_candidates; cand++){
+			if(satisfies(job, busy_candidate_array[cand].machine_ad)){
+				busy_resources->delete(busy_candidate_array[cand].machine_id);
+				jobs->DeleteCurrent();
+				job = jobs->Next();
+				nodes--;
+
+				time_ t avail_time = busy_candidate_array[cand].avail_time;
+				if(earlist_exec_time == 0){
+					earlist_exec_time = avail_time;
+				}
+				else if(earlist_exec_time > avail_time){
+					earlist_exec_time = avail_time;
+				}
+
+				if(nodes == 0){
+					delete [] busy_candidate_array;
+					busy_candidate_array = NULL;
+					break;
+				}
+			}
+		}
+
+		delete [] busy_candidate_array;
+		busy_candidate_array = NULL;
+		
+		if(jobs->Number() == 0){
+			break;
+		}
+		
+	}
+
+	if(jobs->Number() == 0){
+		return earlist_exec_time;
+	}
+
+	return cur_time;
+}
+
+//add the resources in the candidates which satisfies the jobs list to the reserved_resources
+//add the deleted ones to their original list
+void
+DedicatedScheduler::addReservedResources( CandidateList *candidates, ResList *resources, HashTable<HashKey, ClassAd*> reserved_resources){
+	candidates->Rewind();
+	while( ClassAd *machine = candidates->Next() ){
+		std::string slot_name_buf;
+		machine.LookupString(ATTR_NAME, slot_name_buf);
+		char const *name = slot_name_buf.c_str();
+		ClassAd *existing_machine;
+		if(reserved_resources->lookup(HashKey(name), existing_machine) == 0){
+			continue;
+		}
+		reserved_resources->insert(HashKey(name), machine);
+	}
+	candidates->appendResources(resources);
+}
+
 
 void
 DedicatedScheduler::sortResources( void )
@@ -2852,7 +3147,10 @@ DedicatedScheduler::createAllocations( CAList *idle_candidates,
 		mrec->allocated = true;
 		mrec->cluster   = cluster;
 		mrec->proc      = proc;
-		mrec->next_avail_time = alloc_time + ;
+
+			//get the job estimatd time and let next_avail_time be the value of time now + job estimated time
+		
+		//mrec->next_avail_time = alloc_time + ;
 
 			// We're now at a new proc
 		if( proc != last_proc) {
@@ -4503,6 +4801,33 @@ RankSorter(const void *ptr1, const void *ptr2) {
 
 	return n1->cluster_id - n2->cluster_id;
 }
+
+
+//sort first by resource's avail_time
+int 
+AvailTimeSorter(const void *ptr1, const void *ptr2){
+	const BusyCandidateNode *n1 = (const BusyCandidateNode *)ptr1;
+	const BusyCandidateNode *n2 = (const BusyCandidateNode *)ptr2;
+
+	if(n1->avail_time < n2->avail_time){
+		return -1;
+	}
+
+	if(n1->avail_time > n2->avail_time){
+		return 1;
+	}
+
+	if (n1->rank < n2->rank) {
+		return -1;
+	}
+
+	if (n1->rank > n2->rank) {
+		return 1;
+	}
+
+	return n1->cluster_id - n2->cluster_id;
+}
+
 
 ClassAd *
 DedicatedScheduler::GetMatchRequestAd( match_rec* qmrec ) {
