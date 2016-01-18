@@ -285,6 +285,10 @@ class DedicatedScheduler : public Service {
 	int		rid;			// DC reaper id
 
  private:
+ 		//this one aims at utilizing the unused resource right now, but before the ture backfilling start, 
+ 		//we should make reservation first for the first job in the queue cus there are not enough unused resources 
+ 		//for it to start
+ 	bool backfillJobs(int cur_cluster);
 
 		// This gets a list of all dedicated resources we control.
 		// This is called at the begining of each handleDedicatedJobs
@@ -292,7 +296,7 @@ class DedicatedScheduler : public Service {
 	bool getDedicatedResourceInfo( void );
 
 		// This one should be seperated out, and most easy to change.
-	bool computeSchedule( void );
+	bool computeSchedule( int *cur_cluster );
 
 		// This creates resource allocations from a matched job
 	void createAllocations( CAList *idle_candidates, CAList *idle_candidates_jobs, 

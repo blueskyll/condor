@@ -170,6 +170,10 @@ class match_rec: public ClaimIdParser
  public:
     match_rec(char const*, char const*, PROC_ID*, const ClassAd*, char const*, char const* pool,bool is_dedicated);
 	~match_rec();
+	//added for resource reservation
+	bool			reserved;
+	time_t			next_avail_time;
+	//end for resource reservation
 
     char*   		peer; //sinful address of startd
 	MyString        m_description;
@@ -897,6 +901,8 @@ private:
 	unsigned m_history_helper_max;
 	unsigned m_history_helper_count;
 	int m_history_helper_rid;
+
+	bool m_matchPasswordEnabled;
 };
 
 

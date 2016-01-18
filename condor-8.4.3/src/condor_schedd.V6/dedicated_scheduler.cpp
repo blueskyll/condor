@@ -1454,6 +1454,9 @@ DedicatedScheduler::sortJobs( void )
 int
 DedicatedScheduler::handleDedicatedJobs( void )
 {
+		//added for remebering where we stop scheduling
+	int cur_cluster = -1;
+	
 	dprintf( D_FULLDEBUG, "Starting "
 			 "DedicatedScheduler::handleDedicatedJobs\n" );
 
@@ -1506,9 +1509,15 @@ DedicatedScheduler::handleDedicatedJobs( void )
 	lastRun = time(0);
 
 		// Figure out what we want to do, based on what we have now.  
-	if( ! computeSchedule() ) { 
+	if( ! computeSchedule( &cur_cluster ) ) { 
 		dprintf( D_ALWAYS, "ERROR: Can't compute schedule, "
 				 "aborting handleDedicatedJobs\n" );
+		return FALSE;
+	}
+
+	if( ! backfillJobs( cur_cluster ) ){
+		dprintf( D_ALWAYS, "ERROR: Can't backfill jobs, "
+						 "aborting handleDedicatedJobs\n" );
 		return FALSE;
 	}
 
@@ -1627,6 +1636,57 @@ void duplicate_partitionable_res(ResList*& resources) {
     resources = dup_res;
 }
 
+//--------------------------------------------------
+//backfill process
+//--------------------------------------------------
+void
+DedicatedScheduler::backfillJobs( int cur_cluster ){
+		//there is no job left.
+	if( cur_cluster > idle_clusters->getlast() ){
+		return true;
+	}
+		//before backfill, we need to make reservation for the current cluster
+	ClassAd *job = NULL;
+	CAList *jobs = NULL;
+	ResList* reservedResource = new ResList;
+	int nprocs = 0;
+	bool give_up = false;
+	
+	while( job = GetJobAd( (*idle_clusters)[i], nprocs) ){
+		int hosts = 0;
+		if( ! job->LookupInteger(ATTR_CLUSTER_ID, cluster) ) {
+				// ATTR_CLUSTER_ID is undefined!
+			break;
+		}
+		if( !job->LookupInteger(ATTR_MAX_HOSTS, hosts) ) {
+			break;
+		}
+		
+		int proc_id;
+		if( !job->LookupInteger(ATTR_PROC_ID, proc_id) ) {
+			give_up = true;
+			break;
+		}
+		jobsToReconnect.Rewind();
+		PROC_ID reconId;
+		while (jobsToReconnect.Next(reconId)) {
+			if ((reconId.cluster == cluster) &&
+				(reconId.proc	 == proc_id)) {
+				dprintf(D_FULLDEBUG, "skipping %d.%d because it is waitingn to reconnect\n", cluster, proc_id);
+				break;
+				}
+			}
+			dprintf( D_FULLDEBUG, 
+					"Trying to find %d resource(s) for dedicated job %d.%d\n",
+						hosts, cluster, proc_id );
+		
+			for( int job_num = 0 ; job_num < hosts; job_num++) {
+				jobs->Append(job);
+			}
+			nprocs++;
+	}
+
+}
 
 void
 DedicatedScheduler::sortResources( void )
@@ -2075,7 +2135,7 @@ DedicatedScheduler::shadowSpawned( shadow_rec* srec )
 
 
 bool
-DedicatedScheduler::computeSchedule( void )
+DedicatedScheduler::computeSchedule( int *cur_cluster )
 {
 		// Initialization
 		//int proc, cluster, max_hosts;
@@ -2091,7 +2151,7 @@ DedicatedScheduler::computeSchedule( void )
 	CandidateList *unclaimed_candidates = NULL;
 	CAList *unclaimed_candidates_jobs = NULL;
 
-	int *nodes_per_proc = NULL;
+//	int *nodes_per_proc = NULL;
 	match_rec* mrec;
 	int i, l;
 
@@ -2348,14 +2408,76 @@ DedicatedScheduler::computeSchedule( void )
 				unclaimed_candidates_jobs = NULL;
 				continue;
 			}	
-		}	
+		}
+		
+        //-----------------------------------------------------------------
+		//added here to verify if we have enough resource to run the job
+		
+		jobs->Rewind();
+		while( (jobs->Next()) ) {
+			jobs->DeleteCurrent();
+		}
 
+		int current_proc = 0;
+		while ( (job = GetJobAd( (*idle_clusters)[i], current_proc))) {
+			int hosts;
+			job->LookupInteger(ATTR_MAX_HOSTS, hosts);
+
+			for( int job_num = 0 ; job_num < hosts; job_num++) {
+				jobs->Append(job);
+			}
+			current_proc++;
+		}
+
+				//give them back to our resources since we can not schedule the job now.
+		if( idle_candidates ) {
+			idle_candidates->appendResources(idle_resources);
+			delete idle_candidates;
+			idle_candidates = NULL;
+			delete idle_candidates_jobs;
+			idle_candidates_jobs = NULL;
+		}
+			
+		if( limbo_candidates ) {
+			limbo_candidates->appendResources(limbo_resources);
+			delete limbo_candidates;
+			limbo_candidates = NULL;
+			delete limbo_candidates_jobs;
+			limbo_candidates_jobs = NULL;
+		}
+				
+		if( unclaimed_candidates ) {
+			unclaimed_candidates->appendResources(unclaimed_resources);
+			delete unclaimed_candidates;
+			unclaimed_candidates = NULL;
+			delete unclaimed_candidates_jobs;
+			unclaimed_candidates_jobs = NULL;
+		}
+
+		if(isPossibleToSatisfy(jobs, max_hosts) ) {
+				// Yes, we could run it.  Stop here.
+			dprintf( D_FULLDEBUG, "Could satisfy job %d in the future, "
+					 "done computing schedule\n", cluster );
+			delete jobs;
+			return true;
+		} else {
+			dprintf( D_FULLDEBUG, "Can't satisfy job %d with all possible "
+					 "resources... trying next job\n", cluster );
+			continue;
+			}
+		
+		//end added here to verify if we have enough resource to run the job
+		
+		
+		//del cus we do not preempt resource
+		/*********************************************************************************************
+		
 			// preempt case
 			// create our preemptable list, sort it, make a ResList out of it, 
 			// and try the equivalent of satisfyJobs yet again.  Note that this
 			// requires us to compare with the sorted list of candidates, so we
 			// can't call satisfy jobs exactly.
-
+			
 		ExprTree *preemption_rank = NULL;  
 		ExprTree *preemption_req  = NULL;  
 
@@ -2663,11 +2785,13 @@ DedicatedScheduler::computeSchedule( void )
 			}
 			continue;
 		}
+		***********************************************************************************************/
 	}
+	*cur_cluster = i;
 	delete jobs;
-	if( nodes_per_proc ) {
-			delete [] nodes_per_proc;
-	}
+	//if( nodes_per_proc ) {
+	//		delete [] nodes_per_proc;
+	//}
 	return true;
 }
 
@@ -2678,6 +2802,11 @@ DedicatedScheduler::createAllocations( CAList *idle_candidates,
 									   int cluster, int nprocs,
 									   bool is_reconnect)
 {
+	//add accoc_time to compute the next available time of the resource allocated
+	time_t alloc_time = time(0);
+
+	//get the job duration value
+	
 	AllocationNode *alloc;
 	MRecArray* matches=NULL;
 
@@ -2723,6 +2852,7 @@ DedicatedScheduler::createAllocations( CAList *idle_candidates,
 		mrec->allocated = true;
 		mrec->cluster   = cluster;
 		mrec->proc      = proc;
+		mrec->next_avail_time = alloc_time + ;
 
 			// We're now at a new proc
 		if( proc != last_proc) {
