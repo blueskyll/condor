@@ -121,7 +121,7 @@ class ResList : public CAList {
 		//check if we could satisfy jobs after the first job in the queue, 
 		//we need to take job estimated/expected time into consideration in order to not delay the scheduling of the first job in the queue.
 	bool satisfyBackfillingJobs(time_t limit_end_time, time_t job_estimated_exec_time, 
-		CAList *jobs, CAList *candidates, CAList* candidates_jobs, HashTable<HashKey, ClassAd*> reserved_resources);
+		CAList *jobs, CAList *candidates, CAList* candidates_jobs, HashTable<HashKey, ClassAd*>* reserved_resources);
 
 	int num_matches;
 	
@@ -308,16 +308,16 @@ class DedicatedScheduler : public Service {
  		//this one aims at utilizing the unused resource right now, but before the ture backfilling start, 
  		//we should make reservation first for the first job in the queue cus there are not enough unused resources 
  		//for it to start
- 	bool processOfBackfilling(int cur_cluster, , ResList *maybe_busy_candidate, TimeList* maybe_busy_candidates_avail_time);
+ 	bool processOfBackfilling(int cur_cluster, ResList *maybe_busy_candidate, TimeList maybe_busy_candidates_avail_time);
 
 		//real backfilling
-	bool backfillJobs(time_t limit_end_time, HashTable<HashKey, ClassAd*> reserved_resources, CAList *jobs, int nprocs, int cluster);
+	bool backfillJobs(time_t limit_end_time, HashTable<HashKey, ClassAd*>* reserved_resources, CAList *jobs, int nprocs, int cluster);
 	
 		//add the resources in the candidates which satisfies the jobs list to the reserved_resources
 		//add the deleted ones to their original list
-	void addReservedResources( CandidateList *candidates, ResList *resources, HashTable<HashKey, ClassAd*> reserved_resources );
+	void addReservedResources( CandidateList *candidates, ResList *resources, HashTable<HashKey, ClassAd*>* reserved_resources );
 
-	time_t getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* maybe_busy_candidate, TimeList* maybe_busy_candidates_avail_time); 
+	time_t getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* maybe_busy_candidate, TimeList maybe_busy_candidates_avail_time); 
 	
 		// This gets a list of all dedicated resources we control.
 		// This is called at the begining of each handleDedicatedJobs
@@ -325,7 +325,7 @@ class DedicatedScheduler : public Service {
 	bool getDedicatedResourceInfo( void );
 
 		// This one should be seperated out, and most easy to change.
-	bool computeSchedule( int *cur_cluster, , ResList *maybe_busy_candidate, TimeList* maybe_busy_candidates_avail_time);
+	bool computeSchedule( int *cur_cluster, ResList *maybe_busy_candidate, TimeList* maybe_busy_candidates_avail_time);
 
 		// This creates resource allocations from a matched job
 	void createAllocations( CAList *idle_candidates, CAList *idle_candidates_jobs, 
