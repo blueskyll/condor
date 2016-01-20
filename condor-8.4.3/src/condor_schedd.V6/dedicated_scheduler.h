@@ -29,6 +29,8 @@ enum AllocStatus { A_NEW, A_RUNNING, A_DYING };
 enum NegotiationResult { NR_MATCHED, NR_REJECTED, NR_END_NEGOTIATE, 
 						 NR_LIMIT_REACHED, NR_ERROR };
 
+class TimeList : public List<time_t>{};
+
 class CAList : public List<ClassAd> {};
 
 class MRecArray : public ExtArray<match_rec*> {};
@@ -306,7 +308,7 @@ class DedicatedScheduler : public Service {
  		//this one aims at utilizing the unused resource right now, but before the ture backfilling start, 
  		//we should make reservation first for the first job in the queue cus there are not enough unused resources 
  		//for it to start
- 	bool processOfBackfilling(int cur_cluster);
+ 	bool processOfBackfilling(int cur_cluster, , ResList *maybe_busy_candidate, TimeList* maybe_busy_candidates_avail_time);
 
 		//real backfilling
 	bool backfillJobs(time_t limit_end_time, HashTable<HashKey, ClassAd*> reserved_resources, CAList *jobs, int nprocs, int cluster);
@@ -315,7 +317,7 @@ class DedicatedScheduler : public Service {
 		//add the deleted ones to their original list
 	void addReservedResources( CandidateList *candidates, ResList *resources, HashTable<HashKey, ClassAd*> reserved_resources );
 
-	time_t getJobEarliestExecTime(CAList *jobs, int nprocs); 
+	time_t getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* maybe_busy_candidate, TimeList* maybe_busy_candidates_avail_time); 
 	
 		// This gets a list of all dedicated resources we control.
 		// This is called at the begining of each handleDedicatedJobs
@@ -323,7 +325,7 @@ class DedicatedScheduler : public Service {
 	bool getDedicatedResourceInfo( void );
 
 		// This one should be seperated out, and most easy to change.
-	bool computeSchedule( int *cur_cluster );
+	bool computeSchedule( int *cur_cluster, , ResList *maybe_busy_candidate, TimeList* maybe_busy_candidates_avail_time);
 
 		// This creates resource allocations from a matched job
 	void createAllocations( CAList *idle_candidates, CAList *idle_candidates_jobs, 
