@@ -25,7 +25,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <string>
-
 class MyString;
 #include "stl_string_utils.h"
 

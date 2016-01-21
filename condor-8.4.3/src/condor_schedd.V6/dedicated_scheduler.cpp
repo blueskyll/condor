@@ -51,6 +51,7 @@
 #include "condor_qmgr.h"
 #include "schedd_negotiate.h"
 
+#include <sstream>
 #include <vector>
 using std::vector;
 
@@ -483,6 +484,8 @@ CandidateList::markScheduled()
 
 DedicatedScheduler::DedicatedScheduler()
 {
+	maybe_busy_candidate = NULL;
+
 	idle_clusters = NULL;
 	resources = NULL;
 
@@ -520,6 +523,7 @@ DedicatedScheduler::DedicatedScheduler()
 
 DedicatedScheduler::~DedicatedScheduler()
 {
+	if(	maybe_busy_candidate) {delete maybe_busy_candidate;}
 	if(	idle_clusters ) { delete idle_clusters; }
 	if(	resources ) { delete resources; }
 
@@ -563,6 +567,15 @@ DedicatedScheduler::~DedicatedScheduler()
         delete tmp;
 	}
 	delete all_matches;
+
+	MyString *tmp_str;
+
+	maybe_busy_can_avail_time->startIterations();
+	while( maybe_busy_can_avail_time->iterate( tmp_str ) ) {
+		delete tmp_str;
+	}
+	delete maybe_busy_can_avail_time;
+
 
 		// Clear out the resource_requests queue
 	clearResourceRequests();  	// Delete classads in the queue
@@ -1500,7 +1513,6 @@ int
 DedicatedScheduler::handleDedicatedJobs( void )
 {
 	ResList *maybe_busy_candidate = NULL;
-	TimeList maybe_busy_candidates_avail_time;
 	
 		//added for remebering where we stop scheduling
 	int cur_cluster = -1;
@@ -1557,13 +1569,13 @@ DedicatedScheduler::handleDedicatedJobs( void )
 	lastRun = time(0);
 
 		// Figure out what we want to do, based on what we have now.  
-	if( ! computeSchedule( &cur_cluster, maybe_busy_candidate, &maybe_busy_candidates_avail_time) ) { 
+	if( ! computeSchedule( &cur_cluster) ) { 
 		dprintf( D_ALWAYS, "ERROR: Can't compute schedule, "
 				 "aborting handleDedicatedJobs\n" );
 		return FALSE;
 	}
 
-	if( ! processOfBackfilling( cur_cluster, maybe_busy_candidate, maybe_busy_candidates_avail_time) ){
+	if( ! processOfBackfilling( cur_cluster) ){
 		dprintf( D_ALWAYS, "ERROR: Can't backfill jobs, "
 						 "aborting handleDedicatedJobs\n" );
 		return FALSE;
@@ -1894,7 +1906,7 @@ DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, Class
 //preprocess of backfilling, first we need to reserve resources for the first job in the queue.
 //--------------------------------------------------
 bool
-DedicatedScheduler::processOfBackfilling( int cur_cluster, ResList *maybe_busy_candidate, TimeList maybe_busy_candidates_avail_time ){
+DedicatedScheduler::processOfBackfilling( int cur_cluster){
 
 	CAList *jobs = NULL;
 	int nprocs = 0;
@@ -2045,7 +2057,7 @@ DedicatedScheduler::processOfBackfilling( int cur_cluster, ResList *maybe_busy_c
 		unclaimed_candidates_jobs = NULL;
 	}
 
-	time_t earlist_exec_time = getJobEarliestExecTime(jobs,nprocs, maybe_busy_candidate, maybe_busy_candidates_avail_time);
+	time_t earlist_exec_time = getJobEarliestExecTime(jobs,nprocs);
 	if(cur_time >= earlist_exec_time)
 		return true;
 
@@ -2066,7 +2078,7 @@ DedicatedScheduler::processOfBackfilling( int cur_cluster, ResList *maybe_busy_c
 //get the expected time which the job can be assigned enough resources to run. 
 //If the return value is cur_now, then it indicates that the job is not suitable to reserve resources.
 time_t
-DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* maybe_busy_candidate, TimeList maybe_busy_candidates_avail_time){
+DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 	time_t cur_time = time(NULL);
 	time_t earlist_exec_time = cur_time;
 	
@@ -2109,7 +2121,9 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* ma
 		
 		int num_busy_candidates = 0;
 		int num_maybe_busy_candidates = 0;
-
+		time_t avail_time = 0;
+		float rank = 0.0;
+		
 		busy_resources->Rewind();
 		while( ClassAd *machine = busy_resources->Next() ){
 			match_rec *mrec;
@@ -2123,10 +2137,9 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* ma
 
 				//make sure the machine matches the job
 			if(satisfies(job, machine)){
-				float rank = 0.0;
-				time_t avail_time = mrec->next_avail_time;
+				rank = 0.0;
+				avail_time = mrec->next_avail_time;
 				job->EvalFloat(ATTR_RANK, machine, rank);
-
 				busy_candidate_array[num_busy_candidates].avail_time = avail_time;
 				busy_candidate_array[num_busy_candidates].rank = rank;
 				busy_candidate_array[num_busy_candidates].cluster_id = cluster;
@@ -2135,27 +2148,29 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* ma
 			}
 		}
 
-		maybe_busy_candidate->Rewind();
-		maybe_busy_candidates_avail_time.Rewind();
+		MyString slot_name;
+		MyString* time_str = NULL;
 		
+		maybe_busy_candidate->Rewind();
 		while(ClassAd* machine = maybe_busy_candidate->Next()){
 			if(satisfies(job, machine)){
-				float rank = 0.0;
-				time_t* avail_time = NULL;
-				avail_time = new time_t;
-				avail_time = maybe_busy_candidates_avail_time.Next();
-				job->EvalFloat(ATTR_RANK, machine, rank);
-
-				maybe_busy_candidate_array[num_maybe_busy_candidates].avail_time = *avail_time;
-				maybe_busy_candidate_array[num_maybe_busy_candidates].rank = rank;
-				maybe_busy_candidate_array[num_maybe_busy_candidates].cluster_id = cluster;
-				maybe_busy_candidate_array[num_maybe_busy_candidates].machine_ad = machine;
-				maybe_busy_candidate_array++;
+				machine->LookupString(ATTR_NAME, slot_name);
+				if(maybe_busy_can_avail_time->lookup(HashKey(slot_name.Value()), time_str) >= 0){
+					std::stringstream stream;
+					stream << (*time_str).Value();
+					stream >> avail_time;
+					rank = 0.0;
+					job->EvalFloat(ATTR_RANK, machine, rank);
+					maybe_busy_candidate_array[num_maybe_busy_candidates].avail_time = avail_time;
+					maybe_busy_candidate_array[num_maybe_busy_candidates].rank = rank;
+					maybe_busy_candidate_array[num_maybe_busy_candidates].cluster_id = cluster;
+					maybe_busy_candidate_array[num_maybe_busy_candidates].machine_ad = machine;
+					maybe_busy_candidate_array++;
+				}
+				
 				if(num_maybe_busy_candidates == res_len)
 					break;
 			}
-			else
-				maybe_busy_candidates_avail_time.Next();
 		}
 
 		qsort(busy_candidate_array, num_busy_candidates, sizeof(struct BusyCandidateNode), AvailTimeSorter);
@@ -2163,12 +2178,14 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* ma
 
 		int busy_cand = 0, maybe_busy_cand = 0;
 		
+		time_t candidate_avail_time = 0;
+		
 		for(busy_cand = 0, maybe_busy_cand = 0; busy_cand < num_busy_candidates && maybe_busy_cand < num_maybe_busy_candidates; ){
 
 			time_t busy_cand_time = busy_candidate_array[busy_cand].avail_time;
 			time_t maybe_busy_cand_time = maybe_busy_candidate_array[maybe_busy_cand].avail_time;
 
-			time_t candidate_avail_time = 0;
+			candidate_avail_time = 0;
 			
 			if(busy_cand_time <= maybe_busy_cand_time){
 				busy_resources->Delete(busy_candidate_array[busy_cand].machine_ad);
@@ -2203,7 +2220,7 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs, ResList* ma
 		}
 
 		if(nodes != 0){
-			time_t candidate_avail_time = 0;
+			candidate_avail_time = 0;
 			
 			while(busy_cand < num_busy_candidates){
 				candidate_avail_time = busy_candidate_array[busy_cand].avail_time;
@@ -2733,13 +2750,17 @@ DedicatedScheduler::shadowSpawned( shadow_rec* srec )
 
 
 bool
-DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candidate, TimeList* maybe_busy_candidates_avail_time)
+DedicatedScheduler::computeSchedule( int *cur_cluster)
 {
 	//used to record the resources we allocated in the current allocation cycle
-	maybe_busy_candidate = NULL;
 
+	if(maybe_busy_candidate){
+		delete maybe_busy_candidate;
+		maybe_busy_candidate = NULL;
+	}
+	
 	int estimated_exec_time = 0;
-	time_t* next_avail_time = NULL;
+	time_t next_avail_time = 0;
 	
 		// Initialization
 		//int proc, cluster, max_hosts;
@@ -2799,7 +2820,6 @@ DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candi
 	CAList *jobs = NULL;
 	l = idle_clusters->getlast();
 
-	next_avail_time = new time_t;
 	maybe_busy_candidate = new ResList;
 	time_t cur_time = time(NULL);
 		
@@ -2898,9 +2918,16 @@ DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candi
 		}
 		
 		//we need to get the estimated_exec_time from job class ad, still waiting to be done......
-		*next_avail_time = cur_time + estimated_exec_time;
+		next_avail_time = cur_time + estimated_exec_time;
 
-		int count = 0;
+		//int count = 0;
+
+		maybe_busy_can_avail_time = new HashTable< HashKey, MyString*>(199, hashFunction);
+		std::stringstream stream;
+		MyString time_str;
+		
+		stream << next_avail_time;
+		time_str = stream.str();
 		
 			// First, try to satisfy the requirements of this cluster
 			// by going after machine resources that are idle &
@@ -2911,9 +2938,13 @@ DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candi
 			printSatisfaction( cluster, idle_candidates, NULL, NULL, NULL );
 			createAllocations( idle_candidates, idle_candidates_jobs,
 							   cluster, nprocs, false );
-			
-			for(count = 0; count < idle_candidates->Length(); count++)
-				(*maybe_busy_candidates_avail_time).Append(next_avail_time);
+			idle_candidates->Rewind();
+
+			while(ClassAd *machine = idle_candidates->Next()){
+				MyString slot_name;
+				machine->LookupString(ATTR_NAME, slot_name);
+				maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+			}
 			
 			idle_candidates->appendResources(maybe_busy_candidate);
 
@@ -2955,8 +2986,12 @@ DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candi
 				if( idle_candidates ) {
 					idle_candidates->markScheduled();
 
-					for(count = 0; count < idle_candidates->Length(); count++)
-						(*maybe_busy_candidates_avail_time).Append(next_avail_time);
+					idle_candidates->Rewind();
+					while(ClassAd *machine = idle_candidates->Next()){
+						MyString slot_name;
+						machine->LookupString(ATTR_NAME, slot_name);
+						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+					}
 
 					idle_candidates->appendResources(maybe_busy_candidate);
 					delete idle_candidates;
@@ -2969,8 +3004,12 @@ DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candi
 				    // and the limbo resources too
 				limbo_candidates->markScheduled();
 					
-				for(count = 0; count < limbo_candidates->Length(); count++)
-					(*maybe_busy_candidates_avail_time).Append(next_avail_time);
+				limbo_candidates->Rewind();
+				while(ClassAd *machine = limbo_candidates->Next()){
+					MyString slot_name;
+					machine->LookupString(ATTR_NAME, slot_name);
+					maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+				}
 
 				limbo_candidates->appendResources(maybe_busy_candidate);
 				
@@ -3018,9 +3057,13 @@ DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candi
 				
 				if( idle_candidates ) {
 					idle_candidates->markScheduled();
-					
-					for(count = 0; count < idle_candidates->Length(); count++)
-						(*maybe_busy_candidates_avail_time).Append(next_avail_time);
+
+					idle_candidates->Rewind();
+					while(ClassAd *machine = idle_candidates->Next()){
+						MyString slot_name;
+						machine->LookupString(ATTR_NAME, slot_name);
+						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+					}
 
 					idle_candidates->appendResources(maybe_busy_candidate);
 					delete idle_candidates;
@@ -3031,10 +3074,13 @@ DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candi
 			
 				if( limbo_candidates ) {
 					limbo_candidates->markScheduled();
-					
-					for(count = 0; count < limbo_candidates->Length(); count++)
-						(*maybe_busy_candidates_avail_time).Append(next_avail_time);
 
+					limbo_candidates->Rewind();
+					while(ClassAd *machine = limbo_candidates->Next()){
+						MyString slot_name;
+						machine->LookupString(ATTR_NAME, slot_name);
+						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+					}
 					limbo_candidates->appendResources(maybe_busy_candidate);
 					
 					delete limbo_candidates;
@@ -3042,9 +3088,13 @@ DedicatedScheduler::computeSchedule( int *cur_cluster, ResList *maybe_busy_candi
 					delete limbo_candidates_jobs;
 					limbo_candidates_jobs = NULL;
 				}
-				
-				for(count = 0; count < unclaimed_candidates->Length(); count++)
-					(*maybe_busy_candidates_avail_time).Append(next_avail_time);
+
+				unclaimed_candidates->Rewind();
+				while(ClassAd *machine = unclaimed_candidates->Next()){
+					MyString slot_name;
+					machine->LookupString(ATTR_NAME, slot_name);
+					maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+				}
 
 				unclaimed_candidates->appendResources(maybe_busy_candidate);
 				
