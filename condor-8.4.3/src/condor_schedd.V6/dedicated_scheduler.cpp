@@ -3220,6 +3220,9 @@ DedicatedScheduler::createAllocations(CAList *idle_candidates,
 		int proc;
 		job->LookupInteger(ATTR_PROC_ID, proc);
 
+		int estimated_duration = 0;
+		job->LookupInteger(ATTR_ESTIMATED_DURATION, estimated_duration);
+
 			// Get the match record
 		if( ! (mrec = getMrec(machine, buf)) ) {
  			EXCEPT( "no match for %s in all_matches table, yet " 
@@ -3234,7 +3237,7 @@ DedicatedScheduler::createAllocations(CAList *idle_candidates,
 
 			//get the job estimatd time and let next_avail_time be the value of time now + job estimated time
 		
-		mrec->next_avail_time = alloc_time + 100;
+		mrec->next_avail_time = alloc_time + estimated_duration * 2;
 
 			// We're now at a new proc
 		if( proc != last_proc) {
