@@ -2233,13 +2233,13 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 		}
 
 		MyString slot_name;
-		MyString* time_str = NULL;
+		MyString *time_str = NULL;
 
 		MyString *tmp_str;
 
 		maybe_busy_can_avail_time->startIterations();
 		while( maybe_busy_can_avail_time->iterate( tmp_str ) ) {
-			dprintf(D_FULLDEBUG, "get from may be busy avail time: %s\n", (*tmp_str).Value());
+			dprintf(D_FULLDEBUG, "get from may be busy avail time: %s\n", tmp_str->Value());
 		}
 		
 		
@@ -2254,14 +2254,14 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 				if(maybe_busy_can_avail_time == NULL)
 					dprintf(D_FULLDEBUG, "maybe_busy_can_avail_time is null\n");
 				
-				dprintf(D_FULLDEBUG, "maybe busy avail time's size:%d\n", maybe_busy_can_avail_time->getTableSize());
+				dprintf(D_FULLDEBUG, "maybe busy avail time's size:%d\n", maybe_busy_can_avail_time->getNumElements());
 				
-				if(maybe_busy_can_avail_time->lookup(HashKey(slot_name.Value()), time_str) >= 0){
+				if(maybe_busy_can_avail_time->lookup(HashKey(slot_name.Value()), time_str) == 0){
 					dprintf(D_FULLDEBUG, "enter maybe busy can avail time\n");
-					dprintf(D_FULLDEBUG, "time str's value is:%s, %s\n", time_str->Value(), (*time_str).Value());
-					//std::stringstream stream;
-					//stream << (*time_str).Value();
-					//stream >> avail_time;
+					dprintf(D_FULLDEBUG, "time str's value is:%s, %s\n", time_str->Value(), time_str->Value());
+					std::stringstream stream;
+					stream << time_str->Value();
+					stream >> avail_time;
 					rank = 0.0;
 
 					dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, maybe_busy_resource's avail time is %d\n", avail_time);
@@ -2270,7 +2270,7 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 					maybe_busy_candidate_array[num_maybe_busy_candidates].rank = rank;
 					maybe_busy_candidate_array[num_maybe_busy_candidates].cluster_id = cluster;
 					maybe_busy_candidate_array[num_maybe_busy_candidates].machine_ad = machine;
-					maybe_busy_candidate_array++;
+					num_maybe_busy_candidates++;
 				}
 				dprintf(D_FULLDEBUG, "if there no maybe busy res avail time info output,it may be the search inmaybe...time got sth wrong.\n");
 				
@@ -2285,6 +2285,8 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 		int busy_cand = 0, maybe_busy_cand = 0;
 		
 		time_t candidate_avail_time = 0;
+
+		dprintf(D_FULLDEBUG, "num_busy_candidates:%d, num_maybe_busy_candidates:%d\n", num_busy_candidates, num_maybe_busy_candidates);
 		
 		for(busy_cand = 0, maybe_busy_cand = 0; busy_cand < num_busy_candidates && maybe_busy_cand < num_maybe_busy_candidates; ){
 
@@ -2336,6 +2338,8 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 
 		if(nodes != 0){
 			candidate_avail_time = 0;
+
+			dprintf(D_FULLDEBUG, "enter if node != 0\n");
 			
 			while(busy_cand < num_busy_candidates){
 				candidate_avail_time = busy_candidate_array[busy_cand].avail_time;
@@ -2361,6 +2365,8 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 				}
 			}
 
+			dprintf(D_FULLDEBUG, "end while busy_cand < num_busy_candidates\n");
+			
 			while(maybe_busy_cand < num_maybe_busy_candidates){
 				candidate_avail_time = maybe_busy_candidate_array[maybe_busy_cand].avail_time;
 				maybe_busy_candidate->Delete(maybe_busy_candidate_array[maybe_busy_cand].machine_ad);
@@ -2383,19 +2389,29 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 					break;
 				}
 			}
+			
+			dprintf(D_FULLDEBUG, "end while maybe_busy_cand < num_busy_candidates\n");
 		}
+
 		
 		delete [] busy_candidate_array;
 		busy_candidate_array = NULL;
 		
+		dprintf(D_FULLDEBUG, "delete busy_candidate_array\n");
+		
 		delete [] maybe_busy_candidate_array;
 		maybe_busy_candidate_array = NULL;
 		
+		dprintf(D_FULLDEBUG, "delete maybe_busy_candidate_array\n");
+		
 		if(jobs->Number() == 0){
+			dprintf(D_FULLDEBUG, "job's number is 0, break.\n");
 			break;
 		}
 		
 	}
+
+	dprintf(D_FULLDEBUG, "end while job = job->next()\n");
 
 	if(jobs->Number() == 0){
 		dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, the earlist_exec_time of jobs is %d, current time is %d\n", earlist_exec_time, cur_time);
@@ -2946,6 +2962,7 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 	l = idle_clusters->getlast();
 
 	maybe_busy_candidate = new ResList;
+	maybe_busy_can_avail_time = new HashTable< HashKey, MyString*>(199, hashFunction);
 	time_t cur_time = time(NULL);
 
 	dprintf( D_FULLDEBUG, "in computeschedule, current time is %d\n", cur_time );
@@ -3051,23 +3068,21 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 		
 		dprintf(D_FULLDEBUG, "computeschedule: next_avail_time is %lld\n", next_avail_time);
 
-		//int count = 0;
-
-		maybe_busy_can_avail_time = new HashTable< HashKey, MyString*>(199, hashFunction);
-		//std::stringstream stream;
-		MyString time_str;
+		/*MyString *time_str = new MyString("");
 		
 		char buf[256];
-		snprintf( buf, 256, "%lld", next_avail_time);	
-		time_str.formatstr("%s", buf);
-		//stream << next_avail_time;	
-		//string s = "test";
-		//int l;
-		//stream >> l;	
-		//stream >> s;
-		dprintf(D_FULLDEBUG, "buf is :%s,time_str: %s\n", buf, time_str.Value());
-		//time_str = stream.str();
+		snprintf( buf, 256, "%lld", next_avail_time);
+		time_str->formatstr("%s", buf);
+		dprintf(D_FULLDEBUG, "buf is :%s,time_str: %s\n", buf, time_str->Value());
+		*/
+
+		std::string time_s;
+		std::stringstream stream;
+		stream << next_avail_time;
+		time_s = stream.str();
 		
+		MyString *time_str = new MyString(time_s);
+		dprintf(D_FULLDEBUG, "time_str: %s\n", time_str->Value());
 			// First, try to satisfy the requirements of this cluster
 			// by going after machine resources that are idle &
 			// claimed by us
@@ -3082,10 +3097,17 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 			while(ClassAd *machine = idle_candidates->Next()){
 				MyString slot_name;
 				machine->LookupString(ATTR_NAME, slot_name);
-				dprintf(D_FULLDEBUG, "the time is %s\n", time_str.Value());
-				int opsResult = maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
-				if(opsResult == 0)
-					dprintf(D_ALWAYS, "insert ops failed\n");
+				dprintf(D_FULLDEBUG, "the time is %s\n", time_str->Value());
+				maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), time_str);
+		
+				MyString *test_s;
+				if(maybe_busy_can_avail_time->exists(HashKey(slot_name.Value())) == 0){
+					dprintf(D_FULLDEBUG, "value just save is found\n");
+					if(maybe_busy_can_avail_time->lookup(HashKey(slot_name.Value()), test_s) == 0){
+						dprintf(D_FULLDEBUG, "value:%s\n", test_s->Value());
+					}
+				}
+				
 			}
 			
 			idle_candidates->appendResources(maybe_busy_candidate);
@@ -3132,7 +3154,7 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 					while(ClassAd *machine = idle_candidates->Next()){
 						MyString slot_name;
 						machine->LookupString(ATTR_NAME, slot_name);
-						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), time_str);
 					}
 
 					idle_candidates->appendResources(maybe_busy_candidate);
@@ -3150,7 +3172,7 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 				while(ClassAd *machine = limbo_candidates->Next()){
 					MyString slot_name;
 					machine->LookupString(ATTR_NAME, slot_name);
-					maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+					maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), time_str);
 				}
 
 				limbo_candidates->appendResources(maybe_busy_candidate);
@@ -3204,7 +3226,7 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 					while(ClassAd *machine = idle_candidates->Next()){
 						MyString slot_name;
 						machine->LookupString(ATTR_NAME, slot_name);
-						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), time_str);
 					}
 
 					idle_candidates->appendResources(maybe_busy_candidate);
@@ -3221,7 +3243,7 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 					while(ClassAd *machine = limbo_candidates->Next()){
 						MyString slot_name;
 						machine->LookupString(ATTR_NAME, slot_name);
-						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+						maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), time_str);
 					}
 					limbo_candidates->appendResources(maybe_busy_candidate);
 					
@@ -3235,7 +3257,7 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 				while(ClassAd *machine = unclaimed_candidates->Next()){
 					MyString slot_name;
 					machine->LookupString(ATTR_NAME, slot_name);
-					maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+					maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), time_str);
 				}
 
 				unclaimed_candidates->appendResources(maybe_busy_candidate);
