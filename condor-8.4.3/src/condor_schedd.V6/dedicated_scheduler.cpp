@@ -413,6 +413,8 @@ ResList::satisfyBackfillingJobs(time_t limit_end_time, time_t job_estimated_exec
 	jobs->Rewind();
 	ClassAd *candidate = NULL;
 	
+	dprintf(D_FULLDEBUG, "in satisfyBackfillingJobs\n");
+	
 	while(ClassAd *job = jobs->Next()){
 		this->Rewind();
 		while((candidate = this->Next())){
@@ -422,9 +424,10 @@ ResList::satisfyBackfillingJobs(time_t limit_end_time, time_t job_estimated_exec
 				bool isTimeSatisfied = true;	
 				MyString slot_name;
 				candidate->LookupString(ATTR_NAME, slot_name);
-				
+				dprintf(D_FULLDEBUG, "sth satisfy the job\n");
 					//if the candidate exists in the reserved_resources
 				if(reserved_resources->exists(HashKey(slot_name.Value())) == 0){
+					dprintf(D_FULLDEBUG, "the candidate %s is in reserved_resources\n", slot_name.Value());
 					if(job_expected_finish_time > limit_end_time)
 						isTimeSatisfied = false;
 					else
@@ -1512,7 +1515,6 @@ DedicatedScheduler::sortJobs( void )
 int
 DedicatedScheduler::handleDedicatedJobs( void )
 {
-	ResList *maybe_busy_candidate = NULL;
 	
 		//added for remebering where we stop scheduling
 	int cur_cluster = -1;
@@ -1702,21 +1704,24 @@ void duplicate_partitionable_res(ResList*& resources) {
 
 
 bool
-DedicatedScheduler::transferCurrentClusterToJobList(int cluster, CAList *jobs, int *nprocs){
-	if(cluster > idle_clusters->getlast()){
+DedicatedScheduler::transferCurrentClusterToJobList(int i, CAList *jobs, int *nprocs){
+	if(i > idle_clusters->getlast()){
 		return false;
 	}
 	
 	ClassAd *job = NULL;
 	*nprocs = 0;
 	
-	if(jobs){
-		delete jobs;
-	}
-	jobs = new CAList;
+	
+
+	int cluster = -1;
+
+	
+	dprintf(D_FULLDEBUG, "transferCurrentClusterToJobList %d\n", i);
 	
 		//get all the jobs in the cluster and check if it is a job need to reconnect
-	while( (job = GetJobAd( (*idle_clusters)[cluster], *nprocs)) ){
+	while( (job = GetJobAd( (*idle_clusters)[i], *nprocs)) ){
+
 		int hosts = 0;
 		if( ! job->LookupInteger(ATTR_CLUSTER_ID, cluster) ) {
 				// ATTR_CLUSTER_ID is undefined!
@@ -1740,13 +1745,19 @@ DedicatedScheduler::transferCurrentClusterToJobList(int cluster, CAList *jobs, i
 			}
 		}
 		dprintf( D_FULLDEBUG, 
-				"Trying to find %d resource(s) for dedicated job %d.%d\n",
+				"in transferCurrentClusterToJobList:Trying to find %d resource(s) for dedicated job %d.%d\n",
 					hosts, cluster, proc_id );
+		
+		dprintf( D_FULLDEBUG, 
+				"transferCurrentClusterToJobList:Trying to find %d resource(s)\n",
+					hosts);
 		
 		for( int job_num = 0 ; job_num < hosts; job_num++) {
 			jobs->Append(job);
 		}
 		(*nprocs)++;
+		dprintf(D_FULLDEBUG, "transferCurrentClusterToJobList:jobs number: %d\n", jobs->Number());
+		dprintf(D_FULLDEBUG, "transferCurrentClusterToJobList:nprocs: %d\n", *nprocs);
 	}
 		
 	bool want_groups = false;;
@@ -1767,13 +1778,14 @@ DedicatedScheduler::transferCurrentClusterToJobList(int cluster, CAList *jobs, i
 			return false; 
 		}
 	}
+	dprintf(D_FULLDEBUG, "end transferCurrentClusterToJobList %d\n", i);
 	
 	return true;
 }
 
 
 bool 
-DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, ClassAd*>* reserved_resources, CAList *jobs, int nprocs, int cluster){
+DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, ClassAd*>* reserved_resources, CAList *jobs, int nprocs){
 
 		//we use idle,limbo,unclaimed resources to backfill jobs.
 	CandidateList *idle_candidates = NULL;
@@ -1789,7 +1801,21 @@ DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, Class
 	int estimated_exec_time = 0;
 	job = jobs->Head();
 	jobs->Rewind();
-	//job->LookupInteger(ATTR_ESTIMATED_EXEC_TIME, estimated_exec_time);
+	int cluster = -1;
+
+	if( ! job->LookupInteger(ATTR_CLUSTER_ID, cluster) ) {
+						// ATTR_CLUSTER_ID is undefined!
+		return true;
+	}
+	
+	dprintf(D_FULLDEBUG, "to backfilling job %d\n", cluster);
+
+	if( !job->LookupInteger(ATTR_DURATION, estimated_exec_time))
+		return true;
+	
+	dprintf(D_FULLDEBUG, " backfilling job %d estimated duration=%d\n", cluster, estimated_exec_time);
+
+	
 
 	if(idle_resources){
 		idle_candidates = new CandidateList;
@@ -1803,6 +1829,7 @@ DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, Class
 
 			delete idle_candidates_jobs;
 			idle_candidates_jobs = NULL;
+			dprintf(D_FULLDEBUG, "idle:success backfilling job %d\n", cluster);
 			return true;
 		}
 	}
@@ -1828,6 +1855,7 @@ DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, Class
 
 			delete limbo_candidates_jobs;
 			limbo_candidates_jobs = NULL;
+			dprintf(D_FULLDEBUG, "limbo:success backfilling job %d\n", cluster);
 			return true;
 		}
 	}
@@ -1868,6 +1896,7 @@ DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, Class
 
 			delete unclaimed_candidates_jobs;
 			unclaimed_candidates_jobs = NULL;
+			dprintf(D_FULLDEBUG, "unclaimed:success backfilling job %d\n", cluster);
 
 			return true;
 		}
@@ -1897,6 +1926,7 @@ DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, Class
 		delete unclaimed_candidates_jobs;
 		unclaimed_candidates_jobs = NULL;
 	}
+	dprintf(D_FULLDEBUG, "fail to backfilling job %d\n", cluster);
 
 	return false;
 }
@@ -1907,13 +1937,21 @@ DedicatedScheduler::backfillJobs(time_t limit_end_time, HashTable<HashKey, Class
 //--------------------------------------------------
 bool
 DedicatedScheduler::processOfBackfilling( int cur_cluster){
+	dprintf(D_FULLDEBUG, "processofbackfilling job %d\n", cur_cluster);
+
 
 	CAList *jobs = NULL;
 	int nprocs = 0;
+	
+	if(jobs){
+		delete jobs;
+	}
+	jobs = new CAList;
 
 	if(!transferCurrentClusterToJobList(cur_cluster, jobs, &nprocs)){
 		return true;
 	}
+	dprintf(D_FULLDEBUG, "processofbackfilling jobs->Number() : %d \n", jobs->Number());
 	
 		//initialization, all defined to make reservation for the current cluster
 	HashTable <HashKey, ClassAd*>* reserved_resources = new HashTable <HashKey, ClassAd*>( 199, hashFunction ); 
@@ -1952,8 +1990,11 @@ DedicatedScheduler::processOfBackfilling( int cur_cluster){
 			}
 			
 			delete jobs;
+			dprintf(D_FULLDEBUG, "processofbackfilling job : could satisfy %d, just go back \n", cur_cluster);
 			return true;
 		}
+		dprintf(D_FULLDEBUG, "processofbackfilling job : idle could not satisfy %d, just continue \n", cur_cluster);
+		dprintf(D_FULLDEBUG, "processofbackfilling jobs->Number() : %d \n", jobs->Number());
 	}
 
 	if(limbo_resources){
@@ -1978,8 +2019,12 @@ DedicatedScheduler::processOfBackfilling( int cur_cluster){
 			limbo_candidates_jobs = NULL;
 			
 			delete jobs;
+			dprintf(D_FULLDEBUG, "processofbackfilling job : could satisfy %d, just go back \n", cur_cluster);
+			
+			return true;
 		}
-		return true;
+		dprintf(D_FULLDEBUG, "processofbackfilling job : limbo_resources could not satisfy %d, just continue \n", cur_cluster);
+		dprintf(D_FULLDEBUG, "processofbackfilling jobs->Number() : %d \n", jobs->Number());
 	}
 
 	if(unclaimed_resources){
@@ -2021,8 +2066,12 @@ DedicatedScheduler::processOfBackfilling( int cur_cluster){
 
 			
 			delete jobs;
+			dprintf(D_FULLDEBUG, "processofbackfilling job : could satisfy %d, just go back \n", cur_cluster);
 			return true;
 		}
+
+		dprintf(D_FULLDEBUG, "processofbackfilling job : unclaimed_resources could not satisfy %d, just continue \n", cur_cluster);
+		dprintf(D_FULLDEBUG, "processofbackfilling job's number can't be satisfied : %d \n", jobs->Number());
 	}
 
 	if(idle_candidates){
@@ -2056,18 +2105,28 @@ DedicatedScheduler::processOfBackfilling( int cur_cluster){
 		delete unclaimed_candidates_jobs;
 		unclaimed_candidates_jobs = NULL;
 	}
+	
+	dprintf(D_FULLDEBUG, "end processofbackfilling job %d\n", cur_cluster);
+	
+	dprintf(D_FULLDEBUG, "before getjobearliestexectime processofbackfilling jobs->Number() : %d \n", jobs->Number());
 
-	time_t earlist_exec_time = getJobEarliestExecTime(jobs,nprocs);
+	time_t earlist_exec_time = getJobEarliestExecTime(jobs, nprocs);
 	if(cur_time >= earlist_exec_time)
 		return true;
+	
+	dprintf(D_FULLDEBUG, "start backfilling from job %d\n", cur_cluster + 1);
 
 		//now we come to real backfilling process
 	l = idle_clusters->getlast();
 	for(i = cur_cluster + 1; i <= l; i++){
+		if (jobs) {
+			delete jobs;
+		}
+		jobs = new CAList;
 		if(!transferCurrentClusterToJobList(i, jobs, &nprocs)){
 			continue;
 		}
-		backfillJobs(earlist_exec_time, reserved_resources, jobs, nprocs, i);
+		backfillJobs(earlist_exec_time, reserved_resources, jobs, nprocs);
 	}
 	
 	return true;
@@ -2079,11 +2138,18 @@ DedicatedScheduler::processOfBackfilling( int cur_cluster){
 //If the return value is cur_now, then it indicates that the job is not suitable to reserve resources.
 time_t
 DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
+	dprintf(D_FULLDEBUG, "getJobEarliestExecTime\n");
+
 	time_t cur_time = time(NULL);
 	time_t earlist_exec_time = cur_time;
+
+	if ( jobs == NULL){
+		dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, the length of jobs is 0\n");
+		return cur_time;
+	}
 	
 	if( nprocs <= 0 || jobs->Number() <= 0)
-		return now;
+		return cur_time;
 
 	ClassAd *job = NULL;
 	int proc;
@@ -2097,24 +2163,41 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 
 	jobs->Rewind();
 	job = jobs->Next();
-	job->LookupInteger(ATTR_CLUSTER_ID, cluster);
+	if( ! job->LookupInteger(ATTR_CLUSTER_ID, cluster) ) {
+				// ATTR_CLUSTER_ID is undefined!
+		return false;
+	}
 	
 	jobs->Rewind();	
 	while( (job = jobs->Next()) ){
-		job->LookupInteger(ATTR_PROC_ID, proc);
+		if( ! job->LookupInteger(ATTR_PROC_ID, proc)){
+			return false;
+		}
 		nodes_per_proc[proc]++;
 	}
 	
 	struct BusyCandidateNode* busy_candidate_array = NULL;
 	struct BusyCandidateNode* maybe_busy_candidate_array = NULL;
+
+	dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, current time is %d\n", cur_time);
+
+	
+	dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, jobs' number is %d\n", jobs->Number());
 	
 	jobs->Rewind();
 	while( (job = jobs->Next()) ){
 		job->LookupInteger(ATTR_PROC_ID, proc);
+
+		dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, job's proc is %d\n", proc);
+		
 		nodes = nodes_per_proc[proc];
 
 		int res_len = resources->Length();
 		int busy_res_len = busy_resources->Length();
+
+		dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, res len is %d\n", res_len);
+
+		dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, busy res len is %d\n", busy_res_len);
 		
 		busy_candidate_array = new struct BusyCandidateNode[busy_res_len];
 		maybe_busy_candidate_array = new struct BusyCandidateNode[res_len];
@@ -2139,6 +2222,7 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 			if(satisfies(job, machine)){
 				rank = 0.0;
 				avail_time = mrec->next_avail_time;
+				dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, busy_resource's avail time is %d\n", avail_time);
 				job->EvalFloat(ATTR_RANK, machine, rank);
 				busy_candidate_array[num_busy_candidates].avail_time = avail_time;
 				busy_candidate_array[num_busy_candidates].rank = rank;
@@ -2150,16 +2234,37 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 
 		MyString slot_name;
 		MyString* time_str = NULL;
+
+		MyString *tmp_str;
+
+		maybe_busy_can_avail_time->startIterations();
+		while( maybe_busy_can_avail_time->iterate( tmp_str ) ) {
+			dprintf(D_FULLDEBUG, "get from may be busy avail time: %s\n", (*tmp_str).Value());
+		}
+		
 		
 		maybe_busy_candidate->Rewind();
 		while(ClassAd* machine = maybe_busy_candidate->Next()){
+			dprintf(D_FULLDEBUG, "maybe busy candidate is not null\n");
 			if(satisfies(job, machine)){
+				dprintf(D_FULLDEBUG, "in maybe busy candidate, sth satisfy the job \n");
 				machine->LookupString(ATTR_NAME, slot_name);
+				dprintf(D_FULLDEBUG, "in maybe busy candidate, satisfying res is %s\n", slot_name.Value());
+				
+				if(maybe_busy_can_avail_time == NULL)
+					dprintf(D_FULLDEBUG, "maybe_busy_can_avail_time is null\n");
+				
+				dprintf(D_FULLDEBUG, "maybe busy avail time's size:%d\n", maybe_busy_can_avail_time->getTableSize());
+				
 				if(maybe_busy_can_avail_time->lookup(HashKey(slot_name.Value()), time_str) >= 0){
-					std::stringstream stream;
-					stream << (*time_str).Value();
-					stream >> avail_time;
+					dprintf(D_FULLDEBUG, "enter maybe busy can avail time\n");
+					dprintf(D_FULLDEBUG, "time str's value is:%s, %s\n", time_str->Value(), (*time_str).Value());
+					//std::stringstream stream;
+					//stream << (*time_str).Value();
+					//stream >> avail_time;
 					rank = 0.0;
+
+					dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, maybe_busy_resource's avail time is %d\n", avail_time);
 					job->EvalFloat(ATTR_RANK, machine, rank);
 					maybe_busy_candidate_array[num_maybe_busy_candidates].avail_time = avail_time;
 					maybe_busy_candidate_array[num_maybe_busy_candidates].rank = rank;
@@ -2167,6 +2272,7 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 					maybe_busy_candidate_array[num_maybe_busy_candidates].machine_ad = machine;
 					maybe_busy_candidate_array++;
 				}
+				dprintf(D_FULLDEBUG, "if there no maybe busy res avail time info output,it may be the search inmaybe...time got sth wrong.\n");
 				
 				if(num_maybe_busy_candidates == res_len)
 					break;
@@ -2182,17 +2288,23 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 		
 		for(busy_cand = 0, maybe_busy_cand = 0; busy_cand < num_busy_candidates && maybe_busy_cand < num_maybe_busy_candidates; ){
 
+			dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, enter select for\n");
+
 			time_t busy_cand_time = busy_candidate_array[busy_cand].avail_time;
 			time_t maybe_busy_cand_time = maybe_busy_candidate_array[maybe_busy_cand].avail_time;
 
 			candidate_avail_time = 0;
 			
 			if(busy_cand_time <= maybe_busy_cand_time){
+				dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, following(busy_cand) is selected\n");
+				displayResource( busy_candidate_array[busy_cand].machine_ad, "   ", D_FULLDEBUG );
 				busy_resources->Delete(busy_candidate_array[busy_cand].machine_ad);
 				candidate_avail_time = busy_cand_time;
 				busy_cand++;
 			}
 			else{
+				dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, following(maybe_busy_cand) is selected\n");
+				displayResource( maybe_busy_candidate_array[maybe_busy_cand].machine_ad, "   ", D_FULLDEBUG );
 				maybe_busy_candidate->Delete(maybe_busy_candidate_array[maybe_busy_cand].machine_ad);
 				candidate_avail_time = maybe_busy_cand_time;
 				maybe_busy_cand++;
@@ -2205,9 +2317,12 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 			nodes_per_proc[proc]--;
 
 				
+			dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, candidate_avail_time is %d\n", candidate_avail_time);
+			
 			if(earlist_exec_time < candidate_avail_time){
 				earlist_exec_time = candidate_avail_time;
 			}
+			dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, earlist_exec_time is %d\n", earlist_exec_time);
 
 			if(nodes == 0){
 				delete [] busy_candidate_array;
@@ -2230,10 +2345,14 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 				job = jobs->Next();
 				nodes--;
 				nodes_per_proc[proc]--;
+
+				dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, candidate_avail_time is %d\n", candidate_avail_time);
 				
 				if(earlist_exec_time < candidate_avail_time){
 					earlist_exec_time = candidate_avail_time;
 				}
+				
+				dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, earlist_exec_time is %d\n", earlist_exec_time);
 
 				if(nodes == 0){
 					delete [] busy_candidate_array;
@@ -2251,10 +2370,12 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 				nodes--;
 				nodes_per_proc[proc]--;
 				
+				dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, candidate_avail_time is %d\n", candidate_avail_time);
 				
 				if(earlist_exec_time < candidate_avail_time){
 					earlist_exec_time = candidate_avail_time;
 				}
+				dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, earlist_exec_time is %d\n", earlist_exec_time);
 
 				if(nodes == 0){
 					delete [] maybe_busy_candidate_array;
@@ -2277,8 +2398,10 @@ DedicatedScheduler::getJobEarliestExecTime(CAList *jobs, int nprocs){
 	}
 
 	if(jobs->Number() == 0){
+		dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, the earlist_exec_time of jobs is %d, current time is %d\n", earlist_exec_time, cur_time);
 		return earlist_exec_time;
 	}
+	dprintf(D_FULLDEBUG, "in getJobEarliestExecTime, the earlist_exec_time = cur_time, so go back to handledidicatedjobs\n");
 
 	return cur_time;
 }
@@ -2297,7 +2420,9 @@ DedicatedScheduler::addReservedResources( CandidateList *candidates, ResList *re
 		if(reserved_resources->lookup(HashKey(slot_name.Value()), existing_machine) == 0){
 			continue;
 		}
-		reserved_resources->insert(HashKey(slot_name.Value()), machine);
+		int opsResult = reserved_resources->insert(HashKey(slot_name.Value()), machine);
+		if(opsResult == 0)
+			dprintf(D_FULLDEBUG, "in add reservedresource, the return value of insert operation is 0\n");
 	}
 	candidates->appendResources(resources);
 }
@@ -2759,7 +2884,7 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 		maybe_busy_candidate = NULL;
 	}
 	
-	int estimated_exec_time = 0;
+	long estimated_exec_time = 0;
 	time_t next_avail_time = 0;
 	
 		// Initialization
@@ -2822,6 +2947,8 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 
 	maybe_busy_candidate = new ResList;
 	time_t cur_time = time(NULL);
+
+	dprintf( D_FULLDEBUG, "in computeschedule, current time is %d\n", cur_time );
 		
 	for( i=0; i<=l; i++ ) {
 
@@ -2918,16 +3045,28 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 		}
 		
 		//we need to get the estimated_exec_time from job class ad, still waiting to be done......
-		next_avail_time = cur_time + estimated_exec_time;
+		job->LookupInteger(ATTR_DURATION, estimated_exec_time);
+		dprintf(D_FULLDEBUG, "computeschedule: job %d estimated duration is %d\n", cluster, estimated_exec_time);
+		next_avail_time = cur_time + estimated_exec_time * 2;
+		
+		dprintf(D_FULLDEBUG, "computeschedule: next_avail_time is %lld\n", next_avail_time);
 
 		//int count = 0;
 
 		maybe_busy_can_avail_time = new HashTable< HashKey, MyString*>(199, hashFunction);
-		std::stringstream stream;
+		//std::stringstream stream;
 		MyString time_str;
 		
-		stream << next_avail_time;
-		time_str = stream.str();
+		char buf[256];
+		snprintf( buf, 256, "%lld", next_avail_time);	
+		time_str.formatstr("%s", buf);
+		//stream << next_avail_time;	
+		//string s = "test";
+		//int l;
+		//stream >> l;	
+		//stream >> s;
+		dprintf(D_FULLDEBUG, "buf is :%s,time_str: %s\n", buf, time_str.Value());
+		//time_str = stream.str();
 		
 			// First, try to satisfy the requirements of this cluster
 			// by going after machine resources that are idle &
@@ -2943,7 +3082,10 @@ DedicatedScheduler::computeSchedule( int *cur_cluster)
 			while(ClassAd *machine = idle_candidates->Next()){
 				MyString slot_name;
 				machine->LookupString(ATTR_NAME, slot_name);
-				maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+				dprintf(D_FULLDEBUG, "the time is %s\n", time_str.Value());
+				int opsResult = maybe_busy_can_avail_time->insert(HashKey(slot_name.Value()), &time_str);
+				if(opsResult == 0)
+					dprintf(D_ALWAYS, "insert ops failed\n");
 			}
 			
 			idle_candidates->appendResources(maybe_busy_candidate);
@@ -3184,6 +3326,10 @@ DedicatedScheduler::createAllocations(CAList *idle_candidates,
 	//add accoc_time to compute the next available time of the resource allocated
 	time_t alloc_time = time(NULL);
 
+	dprintf(D_FULLDEBUG, "createAllocations:\n");
+
+	dprintf(D_FULLDEBUG, "in createAllocations: current time is %d\n", alloc_time);
+
 	//get the job duration value
 	
 	AllocationNode *alloc;
@@ -3221,7 +3367,9 @@ DedicatedScheduler::createAllocations(CAList *idle_candidates,
 		job->LookupInteger(ATTR_PROC_ID, proc);
 
 		int estimated_duration = 0;
-		job->LookupInteger(ATTR_ESTIMATED_DURATION, estimated_duration);
+		job->LookupInteger(ATTR_DURATION, estimated_duration);
+		
+		dprintf(D_FULLDEBUG, "in createAllocations: job's estimated duration is %d\n", estimated_duration);
 
 			// Get the match record
 		if( ! (mrec = getMrec(machine, buf)) ) {
@@ -3238,6 +3386,8 @@ DedicatedScheduler::createAllocations(CAList *idle_candidates,
 			//get the job estimatd time and let next_avail_time be the value of time now + job estimated time
 		
 		mrec->next_avail_time = alloc_time + estimated_duration * 2;
+
+		dprintf(D_FULLDEBUG, "in createAllocations:next available time is %d\n", mrec->next_avail_time);
 
 			// We're now at a new proc
 		if( proc != last_proc) {

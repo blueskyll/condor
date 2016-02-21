@@ -37,6 +37,8 @@
 // more bloat than the most optimal case (if you can get such a thing to work on
 // all compilers!), but the bloat is in the text segment - shared on all processes!
 
+#define ATTR_ESTIMATED_DURATION "EstimatedDuration"
+
 #define ATTR_ABSENT                    "Absent"
 #define ATTR_ACCT_GROUP  "AcctGroup"
 #define ATTR_ACCT_GROUP_USER  "AcctGroupUser"

@@ -311,7 +311,7 @@ class DedicatedScheduler : public Service {
  	bool processOfBackfilling(int cur_cluster);
 
 		//real backfilling
-	bool backfillJobs(time_t limit_end_time, HashTable<HashKey, ClassAd*>* reserved_resources, CAList *jobs, int nprocs, int cluster);
+	bool backfillJobs(time_t limit_end_time, HashTable<HashKey, ClassAd*>* reserved_resources, CAList *jobs, int nprocs);
 	
 		//add the resources in the candidates which satisfies the jobs list to the reserved_resources
 		//add the deleted ones to their original list
@@ -513,7 +513,7 @@ class DedicatedScheduler : public Service {
 	
 	//std::list<time_t> maybe_busy_candidate_avail_time_list;
 	HashTable<HashKey, MyString*>* maybe_busy_can_avail_time;
-
+	
 	ResList *maybe_busy_candidate;
 };
 
